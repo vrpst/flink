@@ -195,15 +195,13 @@ class HomeScreen():
             "Wikipedia": (0, 0, 0),
         }
         self.__no_article_shown = True
-        self.__move_question = True
-        self.__start_question = True
+        self.__question_fade = [2.475, 2.5875, 2.5875]  # start inverted because it will be multiplied by -1 at start
         self.__subtitle_to_show = ""
 
     def showScreen(self, prev):
         screen.showText("Flink", "Helvetica.ttf", 100, (0, 0, 0), (100, 100))
-        screen.showText("How well do you know Wikipedia?", "Helvetica-Bold.ttf", 18, (0, 0, 0), (105, 200))
+        screen.showText("How well do you know", "Helvetica-Bold.ttf", 18, (0, 0, 0), (105, 200))
         self.__showEmojis()
-        self.__manageSubtitle()
         self.__text_buttons.add("startgame", "[[start game]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=True, usepreviouscolor=False)
         self.__text_buttons.add("howtoplay", "[[how to play]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=True, usepreviouscolor=False)
         self.__text_buttons.add("about", "[[about]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=True, usepreviouscolor=False)
@@ -228,8 +226,8 @@ class HomeScreen():
             self.__text_buttons.checkButtonHover(mouse, click)
     
     def remakeScreen(self):
-        screen.blankScreen()
-        if self.__color_transition != [198, 207, 207]:
+        screen.blankScreen()  # blank the screen
+        if self.__color_transition != [198, 207, 207]:  # if the screen color isn't the final color, transition
             if self.__prev == "about":
                 self.__color_transition[0] -= 1
                 self.__color_transition[1] += 1
@@ -237,44 +235,39 @@ class HomeScreen():
                 self.__color_transition[0] -= 1
                 self.__color_transition[2] += 1
             screen.setScreenColor(self.__color_transition)
-        self.__manageSubtitle()
-        screen.showText("Flink", "Helvetica-Bold.ttf", 100, (0, 0, 0), (100, 100))
-        self.__base_sub_width = screen.showText("How well do you know ", "Helvetica.ttf", 18, (0, 0, 0), (105, 200))
+        screen.showText("Flink", "Helvetica-Bold.ttf", 100, (0, 0, 0), (100, 100))  # show the title
+        if self.__no_article_shown:  # if there is no article shown
+            self.__chooseArticle()  # pick and article
+        self.__base_sub_width = screen.showText("How well do you know ", "Helvetica.ttf", 18, (0, 0, 0), (105, 200))  # render the subtitle
         self.__article_sub_width = screen.showText(self.__subtitle_to_show, "Helvetica.ttf", 18, self.__subtitle_color, (105+self.__base_sub_width, 200))
-        self.__manageQuestion()
-        if self.__start_question:  # at the start make the final location the starting one
-            self.__question_pos = self.__final_question_pos
-            self.__start_question = False
-        screen.showText("?", "Helvetica.ttf", 18, (0, 0, 0), (self.__question_pos, 200))
+        self.__updateArticle()  # update them for the fading
+        print(self.__question_color, self.__question_fade, self.__hold)
+        screen.showText("?", "Helvetica.ttf", 18, self.__question_color, (105+self.__question_pos, 200))
         self.__text_buttons.add("startgame", "[[start game]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=False, usepreviouscolor=True)
         self.__text_buttons.add("howtoplay", "[[how to play]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=False, usepreviouscolor=True)
         self.__text_buttons.add("about", "[[about]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=False, usepreviouscolor=True)
         self.__showEmojis()
 
-    def __manageSubtitle(self):
-        if self.__no_article_shown:  # if there is no article shown
-            self.__chooseArticle()
-        self.__updateArticle()
-
     def __updateArticle(self):
         #print(self.__subtitle_color, self.__subtitle_final_color, self.__subtitle_to_show, self.__subtitle_scale)
+        self.__question_pos = self.__article_sub_width + self.__base_sub_width
         self.__check_subtitle_color = (round(self.__subtitle_color[0]), round(self.__subtitle_color[1]), round(self.__subtitle_color[2]))
         if self.__check_subtitle_color != self.__subtitle_final_color:  # if they're different colors
             if self.__hold:  # hold
                 self.__hold_count += 1
                 if self.__hold_count == 200:
                     self.__hold = False
-            else:
-                self.__subtitle_color[0] += self.__subtitle_scale[0]
-                self.__subtitle_color[1] += self.__subtitle_scale[1]
-                self.__subtitle_color[2] += self.__subtitle_scale[2]
-        elif self.__subtitle_final_color != (198, 207, 207):  # if the subtitle color is its color and not bgrd (it has just finished fading in)
+            else:  # if the transition should happen
+                for i in range(3):
+                    self.__subtitle_color[i] += self.__subtitle_scale[i]
+                    self.__question_color[i] += self.__question_fade[i]
+        elif self.__subtitle_final_color != (198, 207, 207):  # if the subtitle color is fully its color and not bgrd (it has just finished fading in)
             self.__hold = True
             self.__hold_count = 0
-            self.__subtitle_scale[0] = self.__subtitle_scale[0]*-1
-            self.__subtitle_scale[1] = self.__subtitle_scale[1]*-1
-            self.__subtitle_scale[2] = self.__subtitle_scale[2]*-1
-            self.__subtitle_final_color = (198, 207, 207)
+            for i in range(3): # flip the fades to fade out
+                self.__subtitle_scale[i] = self.__subtitle_scale[i]*-1
+                self.__question_fade[i] = self.__question_fade[i]*-1
+            self.__subtitle_final_color = (198, 207, 207)  # make the target the background for fade out
         elif self.__check_subtitle_color == self.__subtitle_final_color and self.__subtitle_final_color == (198, 207, 207):
             self.__no_article_shown = True
 
@@ -286,25 +279,17 @@ class HomeScreen():
             self.__new_subtitle = random.choice(self.__subtitles)
         self.__subtitle_to_show = self.__new_subtitle
         self.__subtitle_color = [198, 207, 207]
+        self.__question_color = [198, 207, 207]
         self.__subtitle_final_color = self.__subtitles_colors.get(self.__subtitle_to_show)  # get the final color
         self.__subtitle_scale = [
             (self.__subtitle_final_color[0] - self.__subtitle_color[0])/80,
             (self.__subtitle_final_color[1] - self.__subtitle_color[1])/80,
             (self.__subtitle_final_color[2] - self.__subtitle_color[2])/80
         ]
+        for i in range(3):
+            self.__question_fade[i] = self.__question_fade[i]*-1
         self.__no_article_shown = False
         self.__move_question = True
-
-    
-    def __manageQuestion(self):
-        if self.__move_question:
-            self.__final_question_pos = 105+self.__base_sub_width+self.__article_sub_width
-            self.__move_question = False
-        elif self.__question_pos != self.__final_question_pos:
-            if self.__question_pos < self.__final_question_pos:
-                self.__question_pos += 1
-            else:
-                self.__question_pos -= 1
 
     def __showEmojis(self):
         self.__emojis_image = pygame.image.load("emojis_test.png").convert_alpha()
@@ -418,7 +403,7 @@ class Game():
     def run(self):
         self.__homescreen = HomeScreen()
         self.__homescreen.showScreen("none")
-        screen.playMusic()
+        #screen.playMusic()
         while self.__run == True:
             if self.__status == "home":
                 self.__runHomeScreen()
