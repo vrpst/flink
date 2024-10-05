@@ -1,6 +1,5 @@
 import pygame
 import random
-import math
 
 class ScreenOperations():
     def __init__(self):
