@@ -1,5 +1,6 @@
 import pygame
 import random
+import make_hints
 
 class ScreenOperations():
     def __init__(self):
@@ -241,7 +242,6 @@ class HomeScreen():
         self.__base_sub_width = screen.showText("How well do you know ", "Helvetica.ttf", 18, (0, 0, 0), (105, 200))  # render the subtitle
         self.__article_sub_width = screen.showText(self.__subtitle_to_show, "Helvetica.ttf", 18, self.__subtitle_color, (105+self.__base_sub_width, 200))
         self.__updateArticle()  # update them for the fading
-        print(self.__question_color, self.__question_fade, self.__hold)
         screen.showText("?", "Helvetica.ttf", 18, self.__question_color, (105+self.__question_pos, 200))
         self.__text_buttons.add("startgame", "[[start game]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=False, usepreviouscolor=True)
         self.__text_buttons.add("howtoplay", "[[how to play]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=False, usepreviouscolor=True)
@@ -249,7 +249,6 @@ class HomeScreen():
         self.__showEmojis()
 
     def __updateArticle(self):
-        #print(self.__subtitle_color, self.__subtitle_final_color, self.__subtitle_to_show, self.__subtitle_scale)
         self.__question_pos = self.__article_sub_width + self.__base_sub_width
         self.__check_subtitle_color = (round(self.__subtitle_color[0]), round(self.__subtitle_color[1]), round(self.__subtitle_color[2]))
         if self.__check_subtitle_color != self.__subtitle_final_color:  # if they're different colors
@@ -275,7 +274,6 @@ class HomeScreen():
         self.__hold = False
         self.__new_subtitle = random.choice(self.__subtitles)
         while self.__subtitle_to_show == self.__new_subtitle: # choose a random article
-            print(self.__new_subtitle, self.__subtitle_to_show)
             self.__new_subtitle = random.choice(self.__subtitles)
         self.__subtitle_to_show = self.__new_subtitle
         self.__subtitle_color = [198, 207, 207]
@@ -394,7 +392,17 @@ class AboutScreen():
             screen.showText(self.__bodytext_ls[i], "Helvetica.ttf", 18, (0, 0, 0), (100, 200+(30*i)))
         screen.showText("""<AntiComposite> the first rule of parsing wikitext is "don't parse wikitext" """, "LTYPE.ttf", 16, (0, 0, 0), (110, 570))
         self.__buttons.add("back", "circle", 20.0, [0, 0, 0], (100, 800), new=False, usepreviouscolor=True)
-        
+
+class GameScreen():
+    def __init__(self):
+        pass
+
+    def showScreen(self):
+        pass
+
+    def checkTextButtons(self):
+        pass
+
 class Game():
     def __init__(self):
         self.__run = True
@@ -408,7 +416,7 @@ class Game():
             if self.__status == "home":
                 self.__runHomeScreen()
             elif self.__status == "game":
-                self.__runHelpScreen()
+                self.__runGameScreen()
             elif self.__status == "howtoplay":  # create screens
                 self.__runHelpScreen()
             elif self.__status == "about":
@@ -416,6 +424,25 @@ class Game():
             screen.updateScreen()
 
         pygame.quit()
+
+    def __runGameScreen(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.__run = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self.__gamescreen_button = self.__gamescreen.checkTextButtons(pygame.mouse.get_pos(), click=True)
+                if self.__gamescreen_button == "vowels":  # make these do things in the game class
+                    pass
+                elif self.__gamescreen_button == "sentence":
+                    pass
+                elif self.__gamescreen_button == "random":
+                    pass
+                elif self.__gamescreen_button == "startswith":
+                    pass
+                elif self.__gamescreen_button == "length":
+                    pass
+            elif event.type == pygame.K_KP_ENTER:
+                pass  # guess submitted
 
     def __runHomeScreen(self):
         self.__homescreen.checkTextButtons(pygame.mouse.get_pos(), click=False)
@@ -428,7 +455,8 @@ class Game():
                 if self.__homescreen_button == "game":
                     screen.blankScreen()
                     screen.stopMusic()
-                    self.__homescreen.remakeScreen()
+                    self.__gamescreen = GameScreen()
+                    self.__gamescreen.showScreen()
                     self.__status = "game"
 
                 elif self.__homescreen_button == "howtoplay":
@@ -441,8 +469,7 @@ class Game():
                     screen.blankScreen()
                     self.__aboutscreen = AboutScreen()
                     self.__status = "about"
-                    self.__aboutscreen.showScreen()
-
+                    self.__aboutscreen.showScreen() 
 
     def __runHelpScreen(self):
         self.__helpscreen.checkButtons(pygame.mouse.get_pos(), click=False)
@@ -480,3 +507,4 @@ game.run()
 # MAKE PROGRESS BAR
 # MAKE LOADING SCREEN
 # IMPLEMENT GAME
+# MAKE THE SCREEN and input box PULSE GREEN IF CORRECT, RED IF WRONG
