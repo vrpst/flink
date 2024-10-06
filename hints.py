@@ -23,6 +23,9 @@ class Hints():
         self.__placeholders = self.__makePlaceholders(self.__display_links)  # make placeholder first
         self.__placeholders_real = self.__makePlaceholders(self.__real_link_dupe)  # make placeholders with real links for prog
         self.__first_sentences = self.__removeLinkFromSentence(self.__lists[2])  # replace links in firstsen with placeholders
+
+    def getLinks(self):
+        return (self.__lists[0], self.__lists[1])
                 
     def checkGuess(self, guess):
         if guess.lower() == self.__display_links[0].lower() or guess.lower() == self.__real_links[1].lower():  # guess
@@ -131,8 +134,8 @@ class Hints():
     def gameFinished(self):
         return self.__game
 
-h = Hints()
-h.startGame()
+#h = Hints()
+#h.startGame()
 # CONVERT ALL MESSAGES TO EMBEDS (rm weird embed funct with reacts....)
 
 # ERROR HANDLING

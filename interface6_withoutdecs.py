@@ -1,48 +1,7 @@
 import pygame
 import random
-import make_hints
-
-class ScreenOperations():
-    def __init__(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode([1400, 900])
-        self.setScreenColor((198, 207, 207))
-        self.blankScreen()
-        pygame.display.set_caption("Flink")        
-        self.updateScreen()
-
-    def blankScreen(self):
-        self.screen.fill(self.__color)
-
-    def setScreenColor(self, color):
-        self.__color = color
-
-    def getScreenColor(self):
-        return self.__color
-
-    def playMusic(self):
-        pygame.mixer.init()
-        pygame.mixer.music.load("lobbymusic.mp3")
-        pygame.mixer.music.set_volume(0.5)
-        pygame.mixer.music.play(loops=-1)  # loop
-
-    def showText(self, text: str, font: str, size:int, color: tuple, location: tuple):
-        self.__text_font = pygame.font.Font(font, size)
-        self.__text = self.__text_font.render(text, True, color)
-        self.screen.blit(self.__text, location)
-        return self.__text.get_width()
-
-    def createRectangle(self, color: str, dimensions: list, location: tuple):
-        return pygame.draw.rect(self.screen, color, pygame.Rect(location[0], location[1], dimensions[0], dimensions[1]))
-
-    def createCircle(self, color: str, radius: float, location: tuple):
-        return pygame.draw.circle(self.screen, color, location, radius)
-
-    def stopMusic(self):
-        pygame.mixer.music.stop()
-
-    def updateScreen(self):
-        pygame.display.flip()
+import hints
+import screen_operations
         
 class Buttons():
     def __init__(self):
@@ -391,19 +350,74 @@ class AboutScreen():
         for i in range(len(self.__bodytext_ls)):
             screen.showText(self.__bodytext_ls[i], "Helvetica.ttf", 18, (0, 0, 0), (100, 200+(30*i)))
         screen.showText("""<AntiComposite> the first rule of parsing wikitext is "don't parse wikitext" """, "LTYPE.ttf", 16, (0, 0, 0), (110, 570))
+        #screen.screen.blit(pygame.image.load("game_drawing2.png").convert_alpha(), (850, 190))
         self.__buttons.add("back", "circle", 20.0, [0, 0, 0], (100, 800), new=False, usepreviouscolor=True)
 
 class GameScreen():
-    def __init__(self):
-        pass
+    def __init__(self):  # UNCOMMENT BACKEND WHEN IT'S DONE; COMMENTED FOR SPEED
+        #self.__hints = hints.Hints()  # need to get the lists through links as that's what calls the generator
+        #self.__hints.startGame()
+        self.__real_links = ['Pennsylvania', 'U.S. state', 'United States', 'North America', 'Continent', 'Convention (norm)', 'Social norm', 'Acceptance', 'Psychology', 'Mind', 'Thought', 'Cognition', 'Action (philosophy)', 'Philosophy'] #self.__hints.getLinks()[0]
+        self.__display_links = ['state', 'United States', 'North America', 'continent', 'convention', 'social norm', 'acceptable', 'psychology', 'mind', 'thinks', 'cognitive', 'action', 'philosophy'] #self.__hints.getLinks()[1]
+        self.__buttons = Buttons()
+        self.__guess_box_length = self.__findLongestLink()
+        self.__inputted_text = ""
+
+    def addToInput(self, char):
+        if len(self.__inputted_text) < self.__guess_box_length:
+            self.__inputted_text += chr(char)
+
+    def removeFromInput(self):
+        if len(self.__inputted_text) > 0:
+            self.__inputted_text = self.__inputted_text[:-1]
+
+    def __findLongestLink(self):  # find the longest link possible so the box is never too small, get rid of testing with link
+        self.__longest = [0, ""]
+        for i in self.__real_links:
+            if len(i) > self.__longest[0]:
+                self.__longest[0] = len(i)
+                self.__longest[1] = i
+        for i in self.__display_links:
+            if len(i) > self.__longest[0]:
+                self.__longest[0] = len(i)
+                self.__longest[1] = i
+        return self.__longest[0]
 
     def showScreen(self):
-        pass
+        screen.centreTextHorizontally(self.__real_links[0], "Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
+        self.__drawGuessBox()
+        screen.centreTextHorizontally(self.__inputted_text, "Helvetica.ttf", 32, (0, 0, 0), 200)
 
-    def checkTextButtons(self):
-        pass
+    def __drawGuessBox(self):
+        screen.createRectangle("#9cacac", [20*self.__guess_box_length+4, 52], ((700-10*self.__guess_box_length)-2, 190))
+        screen.createRectangle("#b8c3c3", [20*self.__guess_box_length, 48], (700-10*self.__guess_box_length, 192))
+    
+    def remakeScreen(self):
+        screen.blankScreen()
+        self.showScreen()
 
-class Game():
+    def checkTextButtons(self, mouse, click):
+        if click:
+            self.__clicked = self.__buttons.checkButtonHover(mouse, click)
+            if self.__clicked[1] == "vowel":
+                pass
+            elif self.__clicked[1] == "length":
+                pass
+            elif self.__clicked[1] == "random":
+                pass
+            elif self.__clicked[1] == "sentence":
+                pass
+            elif self.__clicked[1] == "startswith":
+                pass
+            elif self.__clicked[1] == "quit":
+                return "quit"
+        else:
+            self.__buttons.checkButtonHover(mouse, click)
+
+    def checkGuess(self):
+        pass  # get the text inputted and check if the guess is correct
+
+class Interface():
     def __init__(self):
         self.__run = True
         self.__status = "home"
@@ -422,28 +436,24 @@ class Game():
             elif self.__status == "about":
                 self.__runAboutScreen()
             screen.updateScreen()
-
         pygame.quit()
 
     def __runGameScreen(self):
+        self.__gamescreen.remakeScreen()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.__run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.__gamescreen_button = self.__gamescreen.checkTextButtons(pygame.mouse.get_pos(), click=True)
-                if self.__gamescreen_button == "vowels":  # make these do things in the game class
+                if self.__gamescreen_button == "quit":  # make these do things in the game class
                     pass
-                elif self.__gamescreen_button == "sentence":
-                    pass
-                elif self.__gamescreen_button == "random":
-                    pass
-                elif self.__gamescreen_button == "startswith":
-                    pass
-                elif self.__gamescreen_button == "length":
-                    pass
-            elif event.type == pygame.K_KP_ENTER:
-                pass  # guess submitted
-
+            elif event.type == pygame.KEYDOWN:
+                if event.key != 13 and event.key != 8: #if not enter (13) or backspace (8)
+                    if 97 <= event.key and event.key <= 122: #if letter
+                        self.__gamescreen.addToInput(event.key)  # show it
+                elif event.key == 8:
+                    self.__gamescreen.removeFromInput()
+    
     def __runHomeScreen(self):
         self.__homescreen.checkTextButtons(pygame.mouse.get_pos(), click=False)
         self.__homescreen.remakeScreen()
@@ -499,12 +509,18 @@ class Game():
                     self.__homescreen = HomeScreen()
                     self.__homescreen.showScreen("about")
 
-screen = ScreenOperations()                
-game = Game()
-game.run()
+screen = screen_operations.ScreenOperations()                
+intf = Interface()
+intf.run()
 
 # MAKE ICON FOR BACK BUTTON
 # MAKE PROGRESS BAR
 # MAKE LOADING SCREEN
 # IMPLEMENT GAME
 # MAKE THE SCREEN and input box PULSE GREEN IF CORRECT, RED IF WRONG
+
+#TO DO
+# add shift toggle
+# make sure text is valid
+# add enter functionality
+# remove testing from the guess box length
