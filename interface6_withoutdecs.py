@@ -363,9 +363,12 @@ class GameScreen():
         self.__guess_box_length = self.__findLongestLink()
         self.__inputted_text = ""
 
-    def addToInput(self, char):
+    def addToInput(self, char, raw: bool):
         if len(self.__inputted_text) < self.__guess_box_length:
-            self.__inputted_text += chr(char)
+            if not raw:  # if it's the ord value and not the actual char
+                self.__inputted_text += chr(char)
+            else:
+                self.__inputted_text += char
 
     def removeFromInput(self):
         if len(self.__inputted_text) > 0:
@@ -420,7 +423,30 @@ class GameScreen():
 class Interface():
     def __init__(self):
         self.__run = True
+        self.__valid_inputs = [32, 44, 46, 59, 39, 35, 45, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 61, 47] # space , . ; ' # - 1 2 3 4 5 6 7 8 9 0 = /
+        self.__shift_inputs = {
+            32: " ",  # this is just a space and nothing happens if you shift a space i just didn't want ANOTHER if statement
+            44: "<",
+            46: ">",
+            59: ":",
+            39: "@",
+            35: "~",
+            45: "_",
+            49: "!",
+            50: '"',
+            51: "£",
+            52: "$",
+            53: "%",
+            54: "^",
+            55: "&",
+            56: "*",
+            57: "(",
+            48: ")",
+            61: "+",
+            47: "?",
+        }
         self.__status = "home"
+        self.__shift = False
     
     def run(self):
         self.__homescreen = HomeScreen()
@@ -448,10 +474,20 @@ class Interface():
                 if self.__gamescreen_button == "quit":  # make these do things in the game class
                     pass
             elif event.type == pygame.KEYDOWN:
+                print(event.key)
                 if event.key != 13 and event.key != 8: #if not enter (13) or backspace (8)
-                    if 97 <= event.key and event.key <= 122: #if letter
-                        self.__gamescreen.addToInput(event.key)  # show it
-                elif event.key == 8:
+                    if 97 <= event.key and event.key <= 122 or event.key in self.__valid_inputs: #if a valid input
+                        if self.__shift == True:  # if the shift is true
+                            self.__shift = False
+                            if event.key in self.__valid_inputs:  # if it's not a letter, take the new symbol
+                                self.__gamescreen.addToInput(self.__shift_inputs.get(event.key), raw=True)
+                            else:  # if it is a letter, just make it capital
+                                self.__gamescreen.addToInput(event.key-32, raw=False)
+                        else:  # if it's not a shift just paste the character
+                            self.__gamescreen.addToInput(event.key, raw=False)  # show it
+                    elif event.key == 1073742053 or event.key == 1073742049:  # if shift
+                        self.__shift = True
+                elif event.key == 8:  # if it's a backspace, get rid of it
                     self.__gamescreen.removeFromInput()
     
     def __runHomeScreen(self):
