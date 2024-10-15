@@ -355,12 +355,10 @@ class AboutScreen():
 
 class GameScreen():
     def __init__(self):  # UNCOMMENT BACKEND WHEN IT'S DONE; COMMENTED FOR SPEED
-        #self.__hints = hints.Hints()  # need to get the lists through links as that's what calls the generator
-        #self.__hints.startGame()
-        self.__real_links = ['Pennsylvania', 'U.S. state', 'United States', 'North America', 'Continent', 'Convention (norm)', 'Social norm', 'Acceptance', 'Psychology', 'Mind', 'Thought', 'Cognition', 'Action (philosophy)', 'Philosophy'] #self.__hints.getLinks()[0]
-        self.__display_links = ['state', 'United States', 'North America', 'continent', 'convention', 'social norm', 'acceptable', 'psychology', 'mind', 'thinks', 'cognitive', 'action', 'philosophy'] #self.__hints.getLinks()[1]
+        intf.getHints().startGame()
+        self.__page_title = intf.getHints().returnPageTitle()
         self.__buttons = Buttons()
-        self.__guess_box_length = self.__findLongestLink()
+        self.__guess_box_length = intf.getHints().findLongestLink()
         self.__inputted_text = ""
 
     def addToInput(self, char, raw: bool):
@@ -374,20 +372,8 @@ class GameScreen():
         if len(self.__inputted_text) > 0:
             self.__inputted_text = self.__inputted_text[:-1]
 
-    def __findLongestLink(self):  # find the longest link possible so the box is never too small, get rid of testing with link
-        self.__longest = [0, ""]
-        for i in self.__real_links:
-            if len(i) > self.__longest[0]:
-                self.__longest[0] = len(i)
-                self.__longest[1] = i
-        for i in self.__display_links:
-            if len(i) > self.__longest[0]:
-                self.__longest[0] = len(i)
-                self.__longest[1] = i
-        return self.__longest[0]
-
     def showScreen(self):
-        screen.centreTextHorizontally(self.__real_links[0], "Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
+        screen.centreTextHorizontally(self.__page_title, "Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
         self.__drawGuessBox()
         screen.centreTextHorizontally(self.__inputted_text, "Helvetica.ttf", 32, (0, 0, 0), 200)
 
@@ -418,8 +404,11 @@ class GameScreen():
             self.__buttons.checkButtonHover(mouse, click)
 
     def checkGuess(self):
-        pass  # get the text inputted and check if the guess is correct
-
+        if intf.getHints().checkGuess(self.__inputted_text):  # get the text inputted and check if the guess is correct
+            print(True)
+            self.__page_title = intf.getHints().returnPageTitle()
+        self.__inputted_text = ""
+            
 class Interface():
     def __init__(self):
         self.__run = True
@@ -447,7 +436,8 @@ class Interface():
         }
         self.__status = "home"
         self.__shift = False
-    
+        self.__hints: hints = hints.Hints()
+
     def run(self):
         self.__homescreen = HomeScreen()
         self.__homescreen.showScreen("none")
@@ -464,6 +454,9 @@ class Interface():
             screen.updateScreen()
         pygame.quit()
 
+    def getHints(self) -> hints:
+        return self.__hints
+
     def __runGameScreen(self):
         self.__gamescreen.remakeScreen()
         for event in pygame.event.get():
@@ -474,7 +467,6 @@ class Interface():
                 if self.__gamescreen_button == "quit":  # make these do things in the game class
                     pass
             elif event.type == pygame.KEYDOWN:
-                print(event.key)
                 if event.key != 13 and event.key != 8: #if not enter (13) or backspace (8)
                     if 97 <= event.key and event.key <= 122 or event.key in self.__valid_inputs: #if a valid input
                         if self.__shift == True:  # if the shift is true
@@ -489,6 +481,8 @@ class Interface():
                         self.__shift = True
                 elif event.key == 8:  # if it's a backspace, get rid of it
                     self.__gamescreen.removeFromInput()
+                elif event.key == 13:  # enter
+                    self.__gamescreen.checkGuess()
     
     def __runHomeScreen(self):
         self.__homescreen.checkTextButtons(pygame.mouse.get_pos(), click=False)

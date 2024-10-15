@@ -33,10 +33,26 @@ class Hints():
                 self.__moveToNextLink()
             else:  # GAME IS OVER
                 self.__game = False
+            return True
                 # DO SOMETHING TO END THE GAME
         else:
             # DEAL WITH INCORRECT GUESS
-            pass
+            return False
+        
+    def findLongestLink(self):  # find the longest link possible so the box is never too small, get rid of testing with link
+        self.__longest = [0, ""]
+        for i in self.__real_links:
+            if len(i) > self.__longest[0]:
+                self.__longest[0] = len(i)
+                self.__longest[1] = i
+        for i in self.__display_links:
+            if len(i) > self.__longest[0]:
+                self.__longest[0] = len(i)
+                self.__longest[1] = i
+        return self.__longest[0]
+    
+    def returnPageTitle(self):
+        return self.__real_links[0]
 
     def revealLength(self):  ## WORKS ## # REVEALS THE LENGTH OF THE LINK IN HANGMAN FORMAT
         self.__split_link = self.__display_links[0].split(" ")
