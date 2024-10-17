@@ -79,7 +79,79 @@ class Buttons():
 
         elif not self.__hover and click:
             return (False, '')
-    
+
+class ImageButtons():
+    def __init__(self):
+        self.__hover = False
+        self.__buttons_names = []
+        self.__buttons = []
+        self.__buttons_locations = {}
+        self.__buttons_status = {}
+        self.__buttons_disabled_allowed = {}
+        self.__buttons_dimensions = {}
+
+    def add(self, name, location, dimensions, new, disable):
+        if new:
+            self.__buttons_names.append(name)
+            self.__buttons.append(self.__createButton(name, location, dimensions, hover=False, disabled=False))
+            if disable:
+                self.__buttons_disabled_allowed.update({name: True})
+            else:
+                self.__buttons_disabled_allowed.update({name: False})
+        else:
+            if self.__buttons_status[name] == "disabled":
+                self.__createButton(name, location, dimensions, hover=False, disabled=True)
+            elif self.__buttons_status[name] == "hover":
+                self.__createButton(name, location, dimensions, hover=True, disabled=False)
+            else:
+                self.__createButton(name, location, dimensions, hover=False, disabled=False)
+
+    def __createButton(self, name, location, dimensions, hover: bool, disabled: bool):
+        if disabled:
+            self.__button_image_loc = fr"b_{name}_disabled.png"
+            self.__buttons_status.update({name: "disabled"})
+        elif hover:
+            self.__button_image_loc = fr"b_{name}_hover.png"
+            self.__buttons_status.update({name: "hover"})
+        else:
+            self.__button_image_loc = fr"b_{name}.png"
+            self.__buttons_status.update({name: "active"})
+
+        self.__button_image = pygame.image.load(self.__button_image_loc).convert_alpha()
+        screen.screen.blit(self.__button_image, (location[0], location[1]))
+        self.__buttons_locations.update({name: location})
+        self.__buttons_dimensions.update({name: dimensions})
+
+    def checkButtonHover(self, mouse, click):  # check that the mouse doesn't cover a button
+        for but in range(len(self.__buttons)):
+            if click:
+                self.__button_pressed = self.__mouseHover(mouse, self.__buttons_names[but], click)
+                if self.__button_pressed != (False, ""):
+                    return self.__button_pressed  # if clicked, return the button name that was clicked
+            else:
+                self.__mouseHover(mouse, self.__buttons_names[but], click)
+        if click:
+            return (False, "")
+
+    def __mouseHover(self, mousepos, name, click: bool):
+        self.__hover_location = self.__buttons_locations.get(name)
+        if (self.__hover_location[0] <= mousepos[0] <= (self.__hover_location[0] + self.__buttons_dimensions[name][0])) and (self.__hover_location[1] <= mousepos[1] <= (self.__hover_location[1] + self.__buttons_dimensions[name][1])):
+            self.__hover = True
+        else:
+            self.__hover = False
+
+        if self.__hover and click and self.__buttons_status[name] != "disabled" and self.__buttons_disabled_allowed[name]:
+            self.__createButton(name, self.__hover_location, self.__buttons_dimensions[name], hover=False, disabled=True)
+            return (True, name)
+        else:
+            if self.__buttons_status[name] == "disabled":
+                self.__createButton(name, self.__hover_location, self.__buttons_dimensions[name], hover=False, disabled=True)
+            elif self.__hover:
+                self.__createButton(name, self.__hover_location, self.__buttons_dimensions[name], hover=True, disabled=False)
+            else:
+                self.__createButton(name, self.__hover_location, self.__buttons_dimensions[name], hover=False, disabled=False)
+            return (False, "")            
+
 class TextButtons():
     def __init__(self):
         self.__hover = False
@@ -308,9 +380,9 @@ class HelpScreen():  # NOT DONE FINISH CODING
 class AboutScreen():
     def __init__(self):
         self.__bodytext_ls = ["Flink (short for 'first link') was originally concieved as a holiday boredom project. It ended up turning into a behemoth",
-                            "of API requests, wikitext parsing & filtering (NEVER AGAIN), pygame fuckery, and general madness.",
+                            "of API requests, wikitext parsing & filtering (NEVER AGAIN), pygame hell, and general madness.",
                             "",
-                            "The game was originally a Discord bot, but that was abandoned after I realized how ass writing code for Discord is.", 
+                            "The game was originally a Discord bot, but that was abandoned after I realized how bad writing code for Discord is.", 
                             "",
                             "Wikipedia is written by Wikipedians. They are an inconsistent, error-prone, argumentative group of people, and the",
                             "wikitext they write (which is parsed by the game) is code gibberish and requires extensive filtering. This filtering is",
@@ -357,7 +429,7 @@ class GameScreen():
     def __init__(self):  # UNCOMMENT BACKEND WHEN IT'S DONE; COMMENTED FOR SPEED
         intf.getHints().startGame()
         self.__page_title = intf.getHints().returnPageTitle()
-        self.__buttons = Buttons()
+        self.__buttons = ImageButtons()
         self.__guess_box_length = intf.getHints().findLongestLink()
         self.__inputted_text = ""
 
@@ -373,6 +445,7 @@ class GameScreen():
             self.__inputted_text = self.__inputted_text[:-1]
 
     def showScreen(self):
+        self.__buttons.add('length', (900, 600), (158, 59), new=True, disable=True)
         screen.centreTextHorizontally(self.__page_title, "Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
         self.__drawGuessBox()
         screen.centreTextHorizontally(self.__inputted_text, "Helvetica.ttf", 32, (0, 0, 0), 200)
@@ -383,7 +456,10 @@ class GameScreen():
     
     def remakeScreen(self):
         screen.blankScreen()
-        self.showScreen()
+        self.__buttons.add('length', (900, 600), (158, 59), new=False, disable=True)
+        screen.centreTextHorizontally(self.__page_title, "Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
+        self.__drawGuessBox()
+        screen.centreTextHorizontally(self.__inputted_text, "Helvetica.ttf", 32, (0, 0, 0), 200)
 
     def checkTextButtons(self, mouse, click):
         if click:
@@ -391,7 +467,7 @@ class GameScreen():
             if self.__clicked[1] == "vowel":
                 pass
             elif self.__clicked[1] == "length":
-                pass
+                print("LENGTH CLICKED")
             elif self.__clicked[1] == "random":
                 pass
             elif self.__clicked[1] == "sentence":
@@ -458,6 +534,7 @@ class Interface():
         return self.__hints
 
     def __runGameScreen(self):
+        self.__gamescreen.checkTextButtons(pygame.mouse.get_pos(), click=False)
         self.__gamescreen.remakeScreen()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
