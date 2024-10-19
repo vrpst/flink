@@ -1,4 +1,4 @@
-import oldother.wikilink_func2 as wikilink_func2
+import wikilink_func2 as get_articles_api
 import random
 
 class Hints():
@@ -13,7 +13,7 @@ class Hints():
         self.__placeholders_real = []
 
     def startGame(self):
-        self.__lists = wikilink_func2.run()
+        self.__lists = get_articles_api.run()
         self.__real_links = self.__lists[0]  # create the list of actual article titles (will get trimmed as game goes on)
         self.__real_link_dupe = self.__lists[0]   # create the list of article titles unmodified (for progression)
         self.__display_links = self.__lists[1]  # create list of displayed links

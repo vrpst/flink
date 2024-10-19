@@ -2,7 +2,8 @@ import pygame
 import random
 import hints
 import screen_operations
-        
+import os
+
 class Buttons():
     def __init__(self):
         self.__hover = False
@@ -108,13 +109,13 @@ class ImageButtons():
 
     def __createButton(self, name, location, dimensions, hover: bool, disabled: bool):
         if disabled:
-            self.__button_image_loc = fr"b_{name}_disabled.png"
+            self.__button_image_loc = fr"{resources}\b_{name}_disabled.png"
             self.__buttons_status.update({name: "disabled"})
         elif hover:
-            self.__button_image_loc = fr"b_{name}_hover.png"
+            self.__button_image_loc = fr"{resources}\b_{name}_hover.png"
             self.__buttons_status.update({name: "hover"})
         else:
-            self.__button_image_loc = fr"b_{name}.png"
+            self.__button_image_loc = fr"{resources}\b_{name}.png"
             self.__buttons_status.update({name: "active"})
 
         self.__button_image = pygame.image.load(self.__button_image_loc).convert_alpha()
@@ -198,11 +199,11 @@ class TextButtons():
 
         if self.__hover and self.__buttons_color.get(name) == [0, 0, 0]:  # if color should go blue
             screen.createRectangle("#c6cfcf", [obj.get_width(), obj.get_height()], self.__hover_location)
-            self.startgame_button = self.__createButton(name, self.__buttons_text.get(name), "Helvetica.ttf", 30, [0, 80, 89], self.__hover_location, usepreviouscolor=False)
+            self.startgame_button = self.__createButton(name, self.__buttons_text.get(name), fr"{resources}\Helvetica.ttf", 30, [0, 80, 89], self.__hover_location, usepreviouscolor=False)
         
         elif not self.__hover and self.__buttons_color.get(name) == [0, 80, 89]:
             screen.createRectangle("#c6cfcf", [obj.get_width(), obj.get_height()], self.__hover_location)
-            self.startgame_button = self.__createButton(name, self.__buttons_text.get(name), "Helvetica.ttf", 30, [0, 0, 0], self.__hover_location, usepreviouscolor=False)
+            self.startgame_button = self.__createButton(name, self.__buttons_text.get(name), fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], self.__hover_location, usepreviouscolor=False)
         
         if self.__hover and click:  # if the button is clicked on
             return (True, name)
@@ -231,12 +232,12 @@ class HomeScreen():
         self.__subtitle_to_show = ""
 
     def showScreen(self, prev):
-        screen.showText("Flink", "Helvetica.ttf", 100, (0, 0, 0), (100, 100))
-        screen.showText("How well do you know", "Helvetica-Bold.ttf", 18, (0, 0, 0), (105, 200))
+        screen.showText("Flink", fr"{resources}\Helvetica.ttf", 100, (0, 0, 0), (100, 100))
+        screen.showText("How well do you know", fr"{resources}\Helvetica-Bold.ttf", 18, (0, 0, 0), (105, 200))
         self.__showEmojis()
-        self.__text_buttons.add("startgame", "[[start game]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=True, usepreviouscolor=False)
-        self.__text_buttons.add("howtoplay", "[[how to play]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=True, usepreviouscolor=False)
-        self.__text_buttons.add("about", "[[about]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=True, usepreviouscolor=False)
+        self.__text_buttons.add("startgame", "[[start game]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=True, usepreviouscolor=False)
+        self.__text_buttons.add("howtoplay", "[[how to play]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=True, usepreviouscolor=False)
+        self.__text_buttons.add("about", "[[about]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=True, usepreviouscolor=False)
         self.__prev = prev
         if self.__prev == "about":
             self.__color_transition = [207, 198, 207]
@@ -267,16 +268,16 @@ class HomeScreen():
                 self.__color_transition[0] -= 1
                 self.__color_transition[2] += 1
             screen.setScreenColor(self.__color_transition)
-        screen.showText("Flink", "Helvetica-Bold.ttf", 100, (0, 0, 0), (100, 100))  # show the title
+        screen.showText("Flink", fr"{resources}\Helvetica-Bold.ttf", 100, (0, 0, 0), (100, 100))  # show the title
         if self.__no_article_shown:  # if there is no article shown
             self.__chooseArticle()  # pick and article
-        self.__base_sub_width = screen.showText("How well do you know ", "Helvetica.ttf", 18, (0, 0, 0), (105, 200))  # render the subtitle
-        self.__article_sub_width = screen.showText(self.__subtitle_to_show, "Helvetica.ttf", 18, self.__subtitle_color, (105+self.__base_sub_width, 200))
+        self.__base_sub_width = screen.showText("How well do you know ", fr"{resources}\Helvetica.ttf", 18, (0, 0, 0), (105, 200))  # render the subtitle
+        self.__article_sub_width = screen.showText(self.__subtitle_to_show, fr"{resources}\Helvetica.ttf", 18, self.__subtitle_color, (105+self.__base_sub_width, 200))
         self.__updateArticle()  # update them for the fading
-        screen.showText("?", "Helvetica.ttf", 18, self.__question_color, (105+self.__question_pos, 200))
-        self.__text_buttons.add("startgame", "[[start game]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=False, usepreviouscolor=True)
-        self.__text_buttons.add("howtoplay", "[[how to play]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=False, usepreviouscolor=True)
-        self.__text_buttons.add("about", "[[about]]", "Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=False, usepreviouscolor=True)
+        screen.showText("?", fr"{resources}\Helvetica.ttf", 18, self.__question_color, (105+self.__question_pos, 200))
+        self.__text_buttons.add("startgame", "[[start game]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=False, usepreviouscolor=True)
+        self.__text_buttons.add("howtoplay", "[[how to play]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=False, usepreviouscolor=True)
+        self.__text_buttons.add("about", "[[about]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=False, usepreviouscolor=True)
         self.__showEmojis()
 
     def __updateArticle(self):
@@ -321,7 +322,7 @@ class HomeScreen():
         self.__move_question = True
 
     def __showEmojis(self):
-        self.__emojis_image = pygame.image.load("emojis_test.png").convert_alpha()
+        self.__emojis_image = pygame.image.load(fr"{resources}\emojis_test.png").convert_alpha()
         screen.screen.blit(self.__emojis_image, (700, 290))
 
 class HelpScreen():  # NOT DONE FINISH CODING
@@ -348,14 +349,14 @@ class HelpScreen():  # NOT DONE FINISH CODING
         ]
 
     def showScreen(self):
-        screen.showText("How to play", "Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
+        screen.showText("How to play", fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
         self.__showHelp1()
         self.__buttons.add("back", "circle", 20.0, [0, 0, 0], (100, 800), new=True, usepreviouscolor=False)
 
     def __showHelp1(self):
         for i in range(len(self.__help_msg1)):
-            screen.showText(self.__help_msg1[i], "Helvetica.ttf", 16, (0, 0, 0), (100, 220+(22*i)))
-        self.__emojis_image = pygame.image.load("emojis_labelled.png").convert_alpha()
+            screen.showText(self.__help_msg1[i], fr"{resources}\Helvetica.ttf", 16, (0, 0, 0), (100, 220+(22*i)))
+        self.__emojis_image = pygame.image.load(fr"{resources}\emojis_labelled.png").convert_alpha()
         screen.screen.blit(self.__emojis_image, (429, 405))
 
         
@@ -373,7 +374,7 @@ class HelpScreen():  # NOT DONE FINISH CODING
             self.__color_transition[0] += 1
             self.__color_transition[2] -= 1
             screen.setScreenColor(self.__color_transition)
-        screen.showText("How to play", "Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
+        screen.showText("How to play", fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
         self.__showHelp1()
         self.__buttons.add("back", "circle", 20.0, [0, 0, 0], (100, 800), new=False, usepreviouscolor=True)
 
@@ -398,10 +399,10 @@ class AboutScreen():
         self.__buttons = Buttons()
 
     def showScreen(self):
-        screen.showText("About", "Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
+        screen.showText("About", fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
         for i in range(len(self.__bodytext_ls)):
-            screen.showText(self.__bodytext_ls[i], "Helvetica.ttf", 18, (0, 0, 0), (100, 200+(30*i)))
-        screen.showText("""<AntiComposite> the first rule of parsing wikitext is "don't parse wikitext" """, "LTYPE.ttf", 16, (0, 0, 0), (110, 570))
+            screen.showText(self.__bodytext_ls[i], fr"{resources}\Helvetica.ttf", 18, (0, 0, 0), (100, 200+(30*i)))
+        screen.showText("""<AntiComposite> the first rule of parsing wikitext is "don't parse wikitext" """, fr"{resources}\LTYPE.ttf", 16, (0, 0, 0), (110, 570))
         self.__buttons.add("back", "circle", 50.0, [0, 0, 0], (100, 600), new=True, usepreviouscolor=False)
         
     def checkButtons(self, mouse, click):
@@ -418,9 +419,9 @@ class AboutScreen():
             self.__color_transition[0] += 1
             self.__color_transition[1] -= 1
             screen.setScreenColor(self.__color_transition)
-        screen.showText("About", "Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
+        screen.showText("About", fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
         for i in range(len(self.__bodytext_ls)):
-            screen.showText(self.__bodytext_ls[i], "Helvetica.ttf", 18, (0, 0, 0), (100, 200+(30*i)))
+            screen.showText(self.__bodytext_ls[i], fr"{resources}\Helvetica.ttf", 18, (0, 0, 0), (100, 200+(30*i)))
         screen.showText("""<AntiComposite> the first rule of parsing wikitext is "don't parse wikitext" """, "LTYPE.ttf", 16, (0, 0, 0), (110, 570))
         #screen.screen.blit(pygame.image.load("game_drawing2.png").convert_alpha(), (850, 190))
         self.__buttons.add("back", "circle", 20.0, [0, 0, 0], (100, 800), new=False, usepreviouscolor=True)
@@ -446,9 +447,9 @@ class GameScreen():
 
     def showScreen(self):
         self.__buttons.add('length', (900, 600), (158, 59), new=True, disable=True)
-        screen.centreTextHorizontally(self.__page_title, "Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
+        screen.centreTextHorizontally(self.__page_title, fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
         self.__drawGuessBox()
-        screen.centreTextHorizontally(self.__inputted_text, "Helvetica.ttf", 32, (0, 0, 0), 200)
+        screen.centreTextHorizontally(self.__inputted_text, fr"{resources}\Helvetica.ttf", 32, (0, 0, 0), 200)
 
     def __drawGuessBox(self):
         screen.createRectangle("#9cacac", [20*self.__guess_box_length+4, 52], ((700-10*self.__guess_box_length)-2, 190))
@@ -457,9 +458,9 @@ class GameScreen():
     def remakeScreen(self):
         screen.blankScreen()
         self.__buttons.add('length', (900, 600), (158, 59), new=False, disable=True)
-        screen.centreTextHorizontally(self.__page_title, "Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
+        screen.centreTextHorizontally(self.__page_title, fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
         self.__drawGuessBox()
-        screen.centreTextHorizontally(self.__inputted_text, "Helvetica.ttf", 32, (0, 0, 0), 200)
+        screen.centreTextHorizontally(self.__inputted_text, fr"{resources}\Helvetica.ttf", 32, (0, 0, 0), 200)
 
     def checkTextButtons(self, mouse, click):
         if click:
@@ -616,6 +617,8 @@ class Interface():
                     self.__homescreen = HomeScreen()
                     self.__homescreen.showScreen("about")
 
+resources = os.path.dirname(os.path.abspath(__file__))
+resources = resources + r"\resources"
 screen = screen_operations.ScreenOperations()                
 intf = Interface()
 intf.run()

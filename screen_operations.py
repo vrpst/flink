@@ -1,8 +1,11 @@
 import pygame
+import os
+
 class ScreenOperations():
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode([1400, 900])
+        self.__music_location = os.path.dirname(os.path.abspath(__file__)) + r"\resources\lobbymusic.mp3"
         self.setScreenColor((198, 207, 207))
         self.blankScreen()
         pygame.display.set_caption("Flink")        
@@ -19,7 +22,7 @@ class ScreenOperations():
 
     def playMusic(self):
         pygame.mixer.init()
-        pygame.mixer.music.load("lobbymusic.mp3")
+        pygame.mixer.music.load(self.__music_location)
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(loops=-1)  # loop
 
