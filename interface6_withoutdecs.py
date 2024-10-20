@@ -433,6 +433,8 @@ class GameScreen():
         self.__buttons = ImageButtons()
         self.__guess_box_length = intf.getHints().findLongestLink()
         self.__inputted_text = ""
+        self.__guess_box_color = [184, 195, 195]
+        self.__animate_guess = False
 
     def addToInput(self, char, raw: bool):
         if len(self.__inputted_text) < self.__guess_box_length:
@@ -445,22 +447,51 @@ class GameScreen():
         if len(self.__inputted_text) > 0:
             self.__inputted_text = self.__inputted_text[:-1]
 
-    def showScreen(self):
-        self.__buttons.add('length', (900, 600), (158, 59), new=True, disable=True)
-        screen.centreTextHorizontally(self.__page_title, fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
+    def showScreen(self, new: bool):
+        self.__buttons.add('length', (1200, 600), (158, 59), new=new, disable=True)
+        self.__buttons.add('random', (1200, 670), (158, 59), new=new, disable=True)
+        self.__buttons.add('sentence', (1200, 740), (158, 59), new=new, disable=True)
+        #self.__buttons.add('vowel', (1200, 810), (158, 59), new=new, disable=True)
+        if self.__animate_guess:
+            self.__guessAnimation(self.__color_to_animate_guess)
         self.__drawGuessBox()
+        screen.centreTextHorizontally(self.__page_title, fr"{resources}\Helvetica-Bold.ttf", 40, (0, 0, 0), 100)
         screen.centreTextHorizontally(self.__inputted_text, fr"{resources}\Helvetica.ttf", 32, (0, 0, 0), 200)
 
     def __drawGuessBox(self):
         screen.createRectangle("#9cacac", [20*self.__guess_box_length+4, 52], ((700-10*self.__guess_box_length)-2, 190))
-        screen.createRectangle("#b8c3c3", [20*self.__guess_box_length, 48], (700-10*self.__guess_box_length, 192))
+        screen.createRectangle(self.__guess_box_color, [20*self.__guess_box_length, 48], (700-10*self.__guess_box_length, 192))
     
+    def __guessAnimationSetup(self):
+        self.__hold = 0
+        self.__to_color = True
+        self.__animate_guess = True
+    
+    def __guessAnimation(self, color):
+        if self.__to_color == True:
+            if round(self.__guess_box_color[0]) != color[0] and round(self.__guess_box_color[1]) != color[1] and round(self.__guess_box_color[2]) != color[2]:
+                self.__guess_box_color[0] += (color[0]-184)/20
+                self.__guess_box_color[1] += (color[1]-195)/20
+                self.__guess_box_color[2] += (color[2]-195)/20
+            else:
+                self.__hold += 1
+                if self.__hold == 30:
+                    self.__to_color = False
+                    self.__hold = 0
+        else:
+            if round(self.__guess_box_color[0]) != 184 and round(self.__guess_box_color[1]) != 195 and round(self.__guess_box_color[2]) != 195:
+                self.__guess_box_color[0] -= (color[0]-184)/20
+                self.__guess_box_color[1] -= (color[1]-195)/20
+                self.__guess_box_color[2] -= (color[2]-195)/20
+            else:
+                self.__hold += 1
+                if self.__hold == 30:
+                    self.__animate_guess = False
+
+
     def remakeScreen(self):
         screen.blankScreen()
-        self.__buttons.add('length', (900, 600), (158, 59), new=False, disable=True)
-        screen.centreTextHorizontally(self.__page_title, fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
-        self.__drawGuessBox()
-        screen.centreTextHorizontally(self.__inputted_text, fr"{resources}\Helvetica.ttf", 32, (0, 0, 0), 200)
+        self.showScreen(False)
 
     def checkTextButtons(self, mouse, click):
         if click:
@@ -468,7 +499,7 @@ class GameScreen():
             if self.__clicked[1] == "vowel":
                 pass
             elif self.__clicked[1] == "length":
-                print("LENGTH CLICKED")
+                pass
             elif self.__clicked[1] == "random":
                 pass
             elif self.__clicked[1] == "sentence":
@@ -483,7 +514,12 @@ class GameScreen():
     def checkGuess(self):
         if intf.getHints().checkGuess(self.__inputted_text):  # get the text inputted and check if the guess is correct
             print(True)
+            self.__guessAnimationSetup()
+            self.__color_to_animate_guess = (200, 227, 198)
             self.__page_title = intf.getHints().returnPageTitle()
+        else:
+            self.__guessAnimationSetup()
+            self.__color_to_animate_guess = (232, 116, 116)
         self.__inputted_text = ""
             
 class Interface():
@@ -513,7 +549,7 @@ class Interface():
         }
         self.__status = "home"
         self.__shift = False
-        self.__hints: hints = hints.Hints()
+        self.__hints: hints.Hints = hints.Hints()  # typeset so the methods come up
 
     def run(self):
         self.__homescreen = HomeScreen()
@@ -531,7 +567,7 @@ class Interface():
             screen.updateScreen()
         pygame.quit()
 
-    def getHints(self) -> hints:
+    def getHints(self):
         return self.__hints
 
     def __runGameScreen(self):
@@ -574,7 +610,7 @@ class Interface():
                     screen.blankScreen()
                     screen.stopMusic()
                     self.__gamescreen = GameScreen()
-                    self.__gamescreen.showScreen()
+                    self.__gamescreen.showScreen(True)
                     self.__status = "game"
 
                 elif self.__homescreen_button == "howtoplay":
@@ -623,14 +659,10 @@ screen = screen_operations.ScreenOperations()
 intf = Interface()
 intf.run()
 
-# MAKE ICON FOR BACK BUTTON
-# MAKE PROGRESS BAR
-# MAKE LOADING SCREEN
-# IMPLEMENT GAME
-# MAKE THE SCREEN and input box PULSE GREEN IF CORRECT, RED IF WRONG
-
 #TO DO
-# add shift toggle
-# make sure text is valid
-# add enter functionality
-# remove testing from the guess box length
+# add progress bar
+# add mute and back buttons
+# add sfx
+# link button functionality
+# color scheme change?
+# multithread homescreen
