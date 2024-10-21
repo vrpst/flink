@@ -3,6 +3,7 @@ import os
 
 class ScreenOperations():
     def __init__(self):
+        pygame.mixer.pre_init(44100, -16, 2, 512)
         pygame.init()
         self.screen = pygame.display.set_mode([1400, 900])
         self.__music_location = os.path.dirname(os.path.abspath(__file__)) + r"\resources\lobbymusic.mp3"
@@ -45,6 +46,7 @@ class ScreenOperations():
 
     def stopMusic(self):
         pygame.mixer.music.stop()
+        pygame.mixer.music.unload()
 
     def updateScreen(self):
         pygame.display.flip()

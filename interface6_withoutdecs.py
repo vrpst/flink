@@ -133,6 +133,10 @@ class ImageButtons():
                 self.__mouseHover(mouse, self.__buttons_names[but], click)
         if click:
             return (False, "")
+    
+    def resetDisabledButtons(self):
+        for name in self.__buttons_names:
+            self.__buttons_status[name] = "active"
 
     def __mouseHover(self, mousepos, name, click: bool):
         self.__hover_location = self.__buttons_locations.get(name)
@@ -142,6 +146,8 @@ class ImageButtons():
             self.__hover = False
 
         if self.__hover and click and self.__buttons_status[name] != "disabled" and self.__buttons_disabled_allowed[name]:
+            pygame.mixer.music.load(fr"{resources}\button.wav")
+            pygame.mixer.music.play()
             self.__createButton(name, self.__hover_location, self.__buttons_dimensions[name], hover=False, disabled=True)
             return (True, name)
         else:
@@ -206,6 +212,8 @@ class TextButtons():
             self.startgame_button = self.__createButton(name, self.__buttons_text.get(name), fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], self.__hover_location, usepreviouscolor=False)
         
         if self.__hover and click:  # if the button is clicked on
+            pygame.mixer.music.load(fr"{resources}\button.wav")
+            pygame.mixer.music.play()
             return (True, name)
         elif not self.__hover and click:
             return (False, '')
@@ -470,22 +478,22 @@ class GameScreen():
     def __guessAnimation(self, color):
         if self.__to_color == True:
             if round(self.__guess_box_color[0]) != color[0] and round(self.__guess_box_color[1]) != color[1] and round(self.__guess_box_color[2]) != color[2]:
-                self.__guess_box_color[0] += (color[0]-184)/20
-                self.__guess_box_color[1] += (color[1]-195)/20
-                self.__guess_box_color[2] += (color[2]-195)/20
+                self.__guess_box_color[0] += (color[0]-184)/30
+                self.__guess_box_color[1] += (color[1]-195)/30
+                self.__guess_box_color[2] += (color[2]-195)/30
             else:
                 self.__hold += 1
-                if self.__hold == 30:
+                if self.__hold == 20:
                     self.__to_color = False
                     self.__hold = 0
         else:
             if round(self.__guess_box_color[0]) != 184 and round(self.__guess_box_color[1]) != 195 and round(self.__guess_box_color[2]) != 195:
-                self.__guess_box_color[0] -= (color[0]-184)/20
-                self.__guess_box_color[1] -= (color[1]-195)/20
-                self.__guess_box_color[2] -= (color[2]-195)/20
+                self.__guess_box_color[0] -= (color[0]-184)/30
+                self.__guess_box_color[1] -= (color[1]-195)/30
+                self.__guess_box_color[2] -= (color[2]-195)/30
             else:
                 self.__hold += 1
-                if self.__hold == 30:
+                if self.__hold == 20:
                     self.__animate_guess = False
 
 
@@ -512,15 +520,20 @@ class GameScreen():
             self.__buttons.checkButtonHover(mouse, click)
 
     def checkGuess(self):
-        if intf.getHints().checkGuess(self.__inputted_text):  # get the text inputted and check if the guess is correct
-            print(True)
-            self.__guessAnimationSetup()
-            self.__color_to_animate_guess = (200, 227, 198)
-            self.__page_title = intf.getHints().returnPageTitle()
-        else:
-            self.__guessAnimationSetup()
-            self.__color_to_animate_guess = (232, 116, 116)
-        self.__inputted_text = ""
+        if self.__inputted_text != "":
+            if intf.getHints().checkGuess(self.__inputted_text):  # get the text inputted and check if the guess is correct
+                pygame.mixer.music.load(fr"{resources}\correct.wav")
+                pygame.mixer.music.play()
+                self.__guessAnimationSetup()
+                self.__color_to_animate_guess = (190, 227, 188)
+                self.__page_title = intf.getHints().returnPageTitle()
+                self.__buttons.resetDisabledButtons()
+            else:
+                pygame.mixer.music.load(fr"{resources}\incorrect.wav")
+                pygame.mixer.music.play()
+                self.__guessAnimationSetup()
+                self.__color_to_animate_guess = (232, 116, 116)
+            self.__inputted_text = ""
             
 class Interface():
     def __init__(self):
@@ -596,6 +609,8 @@ class Interface():
                 elif event.key == 8:  # if it's a backspace, get rid of it
                     self.__gamescreen.removeFromInput()
                 elif event.key == 13:  # enter
+                    pygame.mixer.music.load(fr"{resources}\button.wav")
+                    pygame.mixer.music.play()
                     self.__gamescreen.checkGuess()
     
     def __runHomeScreen(self):
@@ -665,4 +680,5 @@ intf.run()
 # add sfx
 # link button functionality
 # color scheme change?
-# multithread homescreen
+# multithread home screen
+# add placeholder funct
