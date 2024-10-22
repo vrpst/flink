@@ -27,7 +27,7 @@ class ScreenOperations():
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(loops=-1)  # loop
 
-    def showText(self, text: str, font: str, size:int, color: tuple, location: tuple):
+    def showText(self, text: str, font: str, size: int, color: tuple, location: tuple):
         self.__text_font = pygame.font.Font(font, size)
         self.__text = self.__text_font.render(text, True, color)
         self.screen.blit(self.__text, location)

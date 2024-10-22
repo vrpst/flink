@@ -109,13 +109,13 @@ class ImageButtons():
 
     def __createButton(self, name, location, dimensions, hover: bool, disabled: bool):
         if disabled:
-            self.__button_image_loc = fr"{resources}\b_{name}_disabled.png"
+            self.__button_image_loc = fr"{RESOURCES}\b_{name}_disabled.png"
             self.__buttons_status.update({name: "disabled"})
         elif hover:
-            self.__button_image_loc = fr"{resources}\b_{name}_hover.png"
+            self.__button_image_loc = fr"{RESOURCES}\b_{name}_hover.png"
             self.__buttons_status.update({name: "hover"})
         else:
-            self.__button_image_loc = fr"{resources}\b_{name}.png"
+            self.__button_image_loc = fr"{RESOURCES}\b_{name}.png"
             self.__buttons_status.update({name: "active"})
 
         self.__button_image = pygame.image.load(self.__button_image_loc).convert_alpha()
@@ -146,7 +146,7 @@ class ImageButtons():
             self.__hover = False
 
         if self.__hover and click and self.__buttons_status[name] != "disabled" and self.__buttons_disabled_allowed[name]:
-            pygame.mixer.music.load(fr"{resources}\button.wav")
+            pygame.mixer.music.load(fr"{RESOURCES}\button.wav")
             pygame.mixer.music.play()
             self.__createButton(name, self.__hover_location, self.__buttons_dimensions[name], hover=False, disabled=True)
             return (True, name)
@@ -205,14 +205,14 @@ class TextButtons():
 
         if self.__hover and self.__buttons_color.get(name) == [0, 0, 0]:  # if color should go blue
             screen.createRectangle("#c6cfcf", [obj.get_width(), obj.get_height()], self.__hover_location)
-            self.startgame_button = self.__createButton(name, self.__buttons_text.get(name), fr"{resources}\Helvetica.ttf", 30, [0, 80, 89], self.__hover_location, usepreviouscolor=False)
+            self.startgame_button = self.__createButton(name, self.__buttons_text.get(name), fr"{RESOURCES}\Helvetica.ttf", 30, [0, 80, 89], self.__hover_location, usepreviouscolor=False)
         
         elif not self.__hover and self.__buttons_color.get(name) == [0, 80, 89]:
             screen.createRectangle("#c6cfcf", [obj.get_width(), obj.get_height()], self.__hover_location)
-            self.startgame_button = self.__createButton(name, self.__buttons_text.get(name), fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], self.__hover_location, usepreviouscolor=False)
+            self.startgame_button = self.__createButton(name, self.__buttons_text.get(name), fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], self.__hover_location, usepreviouscolor=False)
         
         if self.__hover and click:  # if the button is clicked on
-            pygame.mixer.music.load(fr"{resources}\button.wav")
+            pygame.mixer.music.load(fr"{RESOURCES}\button.wav")
             pygame.mixer.music.play()
             return (True, name)
         elif not self.__hover and click:
@@ -240,12 +240,12 @@ class HomeScreen():
         self.__subtitle_to_show = ""
 
     def showScreen(self, prev):
-        screen.showText("Flink", fr"{resources}\Helvetica.ttf", 100, (0, 0, 0), (100, 100))
-        screen.showText("How well do you know", fr"{resources}\Helvetica-Bold.ttf", 18, (0, 0, 0), (105, 200))
+        screen.showText("Flink", fr"{RESOURCES}\Helvetica.ttf", 100, (0, 0, 0), (100, 100))
+        screen.showText("How well do you know", fr"{RESOURCES}\Helvetica-Bold.ttf", 18, (0, 0, 0), (105, 200))
         self.__showEmojis()
-        self.__text_buttons.add("startgame", "[[start game]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=True, usepreviouscolor=False)
-        self.__text_buttons.add("howtoplay", "[[how to play]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=True, usepreviouscolor=False)
-        self.__text_buttons.add("about", "[[about]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=True, usepreviouscolor=False)
+        self.__text_buttons.add("startgame", "[[start game]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=True, usepreviouscolor=False)
+        self.__text_buttons.add("howtoplay", "[[how to play]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=True, usepreviouscolor=False)
+        self.__text_buttons.add("about", "[[about]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=True, usepreviouscolor=False)
         self.__prev = prev
         if self.__prev == "about":
             self.__color_transition = [207, 198, 207]
@@ -276,16 +276,16 @@ class HomeScreen():
                 self.__color_transition[0] -= 1
                 self.__color_transition[2] += 1
             screen.setScreenColor(self.__color_transition)
-        screen.showText("Flink", fr"{resources}\Helvetica-Bold.ttf", 100, (0, 0, 0), (100, 100))  # show the title
+        screen.showText("Flink", fr"{RESOURCES}\Helvetica-Bold.ttf", 100, (0, 0, 0), (100, 100))  # show the title
         if self.__no_article_shown:  # if there is no article shown
             self.__chooseArticle()  # pick and article
-        self.__base_sub_width = screen.showText("How well do you know ", fr"{resources}\Helvetica.ttf", 18, (0, 0, 0), (105, 200))  # render the subtitle
-        self.__article_sub_width = screen.showText(self.__subtitle_to_show, fr"{resources}\Helvetica.ttf", 18, self.__subtitle_color, (105+self.__base_sub_width, 200))
+        self.__base_sub_width = screen.showText("How well do you know ", fr"{RESOURCES}\Helvetica.ttf", 18, (0, 0, 0), (105, 200))  # render the subtitle
+        self.__article_sub_width = screen.showText(self.__subtitle_to_show, fr"{RESOURCES}\Helvetica.ttf", 18, self.__subtitle_color, (105+self.__base_sub_width, 200))
         self.__updateArticle()  # update them for the fading
-        screen.showText("?", fr"{resources}\Helvetica.ttf", 18, self.__question_color, (105+self.__question_pos, 200))
-        self.__text_buttons.add("startgame", "[[start game]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=False, usepreviouscolor=True)
-        self.__text_buttons.add("howtoplay", "[[how to play]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=False, usepreviouscolor=True)
-        self.__text_buttons.add("about", "[[about]]", fr"{resources}\Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=False, usepreviouscolor=True)
+        screen.showText("?", fr"{RESOURCES}\Helvetica.ttf", 18, self.__question_color, (105+self.__question_pos, 200))
+        self.__text_buttons.add("startgame", "[[start game]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=False, usepreviouscolor=True)
+        self.__text_buttons.add("howtoplay", "[[how to play]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=False, usepreviouscolor=True)
+        self.__text_buttons.add("about", "[[about]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=False, usepreviouscolor=True)
         self.__showEmojis()
 
     def __updateArticle(self):
@@ -330,7 +330,7 @@ class HomeScreen():
         self.__move_question = True
 
     def __showEmojis(self):
-        self.__emojis_image = pygame.image.load(fr"{resources}\emojis_test.png").convert_alpha()
+        self.__emojis_image = pygame.image.load(fr"{RESOURCES}\emojis_test.png").convert_alpha()
         screen.screen.blit(self.__emojis_image, (700, 290))
 
 class HelpScreen():  # NOT DONE FINISH CODING
@@ -357,14 +357,14 @@ class HelpScreen():  # NOT DONE FINISH CODING
         ]
 
     def showScreen(self):
-        screen.showText("How to play", fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
+        screen.showText("How to play", fr"{RESOURCES}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
         self.__showHelp1()
         self.__buttons.add("back", "circle", 20.0, [0, 0, 0], (100, 800), new=True, usepreviouscolor=False)
 
     def __showHelp1(self):
         for i in range(len(self.__help_msg1)):
-            screen.showText(self.__help_msg1[i], fr"{resources}\Helvetica.ttf", 16, (0, 0, 0), (100, 220+(22*i)))
-        self.__emojis_image = pygame.image.load(fr"{resources}\emojis_labelled.png").convert_alpha()
+            screen.showText(self.__help_msg1[i], fr"{RESOURCES}\Helvetica.ttf", 16, (0, 0, 0), (100, 220+(22*i)))
+        self.__emojis_image = pygame.image.load(fr"{RESOURCES}\emojis_labelled.png").convert_alpha()
         screen.screen.blit(self.__emojis_image, (429, 405))
 
         
@@ -382,7 +382,7 @@ class HelpScreen():  # NOT DONE FINISH CODING
             self.__color_transition[0] += 1
             self.__color_transition[2] -= 1
             screen.setScreenColor(self.__color_transition)
-        screen.showText("How to play", fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
+        screen.showText("How to play", fr"{RESOURCES}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
         self.__showHelp1()
         self.__buttons.add("back", "circle", 20.0, [0, 0, 0], (100, 800), new=False, usepreviouscolor=True)
 
@@ -407,10 +407,10 @@ class AboutScreen():
         self.__buttons = Buttons()
 
     def showScreen(self):
-        screen.showText("About", fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
+        screen.showText("About", fr"{RESOURCES}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
         for i in range(len(self.__bodytext_ls)):
-            screen.showText(self.__bodytext_ls[i], fr"{resources}\Helvetica.ttf", 18, (0, 0, 0), (100, 200+(30*i)))
-        screen.showText("""<AntiComposite> the first rule of parsing wikitext is "don't parse wikitext" """, fr"{resources}\LTYPE.ttf", 16, (0, 0, 0), (110, 570))
+            screen.showText(self.__bodytext_ls[i], fr"{RESOURCES}\Helvetica.ttf", 18, (0, 0, 0), (100, 200+(30*i)))
+        screen.showText("""<AntiComposite> the first rule of parsing wikitext is "don't parse wikitext" """, fr"{RESOURCES}\LTYPE.ttf", 16, (0, 0, 0), (110, 570))
         self.__buttons.add("back", "circle", 50.0, [0, 0, 0], (100, 600), new=True, usepreviouscolor=False)
         
     def checkButtons(self, mouse, click):
@@ -427,19 +427,19 @@ class AboutScreen():
             self.__color_transition[0] += 1
             self.__color_transition[1] -= 1
             screen.setScreenColor(self.__color_transition)
-        screen.showText("About", fr"{resources}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
+        screen.showText("About", fr"{RESOURCES}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
         for i in range(len(self.__bodytext_ls)):
-            screen.showText(self.__bodytext_ls[i], fr"{resources}\Helvetica.ttf", 18, (0, 0, 0), (100, 200+(30*i)))
+            screen.showText(self.__bodytext_ls[i], fr"{RESOURCES}\Helvetica.ttf", 18, (0, 0, 0), (100, 200+(30*i)))
         screen.showText("""<AntiComposite> the first rule of parsing wikitext is "don't parse wikitext" """, "LTYPE.ttf", 16, (0, 0, 0), (110, 570))
         #screen.screen.blit(pygame.image.load("game_drawing2.png").convert_alpha(), (850, 190))
         self.__buttons.add("back", "circle", 20.0, [0, 0, 0], (100, 800), new=False, usepreviouscolor=True)
 
 class GameScreen():
     def __init__(self):  # UNCOMMENT BACKEND WHEN IT'S DONE; COMMENTED FOR SPEED
-        intf.getHints().startGame()
-        self.__page_title = intf.getHints().returnPageTitle()
+        #intf.getHints().startGame()
+        self.__page_title = "asdasd" #intf.getHints().returnPageTitle()
         self.__buttons = ImageButtons()
-        self.__guess_box_length = intf.getHints().findLongestLink()
+        self.__guess_box_length = 40 #intf.getHints().findLongestLink()
         self.__inputted_text = ""
         self.__guess_box_color = [184, 195, 195]
         self.__animate_guess = False
@@ -456,15 +456,20 @@ class GameScreen():
             self.__inputted_text = self.__inputted_text[:-1]
 
     def showScreen(self, new: bool):
-        self.__buttons.add('length', (1200, 600), (158, 59), new=new, disable=True)
-        self.__buttons.add('random', (1200, 670), (158, 59), new=new, disable=True)
-        self.__buttons.add('sentence', (1200, 740), (158, 59), new=new, disable=True)
-        #self.__buttons.add('vowel', (1200, 810), (158, 59), new=new, disable=True)
+        screen.createRectangle("#9cacac", (178, 372), (1190, 406))
+        screen.createRectangle("#c6cfcf", (93, 42), (1232, 385))
+        screen.createRectangle("#c6cfcf", (174, 368), (1192, 408))
+        screen.showText("Hints", fr"{RESOURCES}\Helvetica.ttf", 32, (0, 0, 0), (1242, 390))
+        self.__buttons.add('length', (1200, 430), (158, 59), new=new, disable=True)
+        self.__buttons.add('random', (1200, 500), (158, 59), new=new, disable=True)
+        self.__buttons.add('sentence', (1200, 570), (158, 59), new=new, disable=True)
+        self.__buttons.add('vowel', (1200, 640), (158, 59), new=new, disable=True)
+        self.__buttons.add('startswith', (1200, 710), (158, 59), new=new, disable=True)
         if self.__animate_guess:
             self.__guessAnimation(self.__color_to_animate_guess)
         self.__drawGuessBox()
-        screen.centreTextHorizontally(self.__page_title, fr"{resources}\Helvetica-Bold.ttf", 40, (0, 0, 0), 100)
-        screen.centreTextHorizontally(self.__inputted_text, fr"{resources}\Helvetica.ttf", 32, (0, 0, 0), 200)
+        screen.centreTextHorizontally(self.__page_title, fr"{RESOURCES}\Helvetica-Bold.ttf", 40, (0, 0, 0), 100)
+        screen.centreTextHorizontally(self.__inputted_text, fr"{RESOURCES}\Helvetica.ttf", 32, (0, 0, 0), 200)
 
     def __drawGuessBox(self):
         screen.createRectangle("#9cacac", [20*self.__guess_box_length+4, 52], ((700-10*self.__guess_box_length)-2, 190))
@@ -522,14 +527,14 @@ class GameScreen():
     def checkGuess(self):
         if self.__inputted_text != "":
             if intf.getHints().checkGuess(self.__inputted_text):  # get the text inputted and check if the guess is correct
-                pygame.mixer.music.load(fr"{resources}\correct.wav")
+                pygame.mixer.music.load(fr"{RESOURCES}\correct.wav")
                 pygame.mixer.music.play()
                 self.__guessAnimationSetup()
                 self.__color_to_animate_guess = (190, 227, 188)
                 self.__page_title = intf.getHints().returnPageTitle()
                 self.__buttons.resetDisabledButtons()
             else:
-                pygame.mixer.music.load(fr"{resources}\incorrect.wav")
+                pygame.mixer.music.load(fr"{RESOURCES}\incorrect.wav")
                 pygame.mixer.music.play()
                 self.__guessAnimationSetup()
                 self.__color_to_animate_guess = (232, 116, 116)
@@ -609,8 +614,6 @@ class Interface():
                 elif event.key == 8:  # if it's a backspace, get rid of it
                     self.__gamescreen.removeFromInput()
                 elif event.key == 13:  # enter
-                    pygame.mixer.music.load(fr"{resources}\button.wav")
-                    pygame.mixer.music.play()
                     self.__gamescreen.checkGuess()
     
     def __runHomeScreen(self):
@@ -669,7 +672,7 @@ class Interface():
                     self.__homescreen.showScreen("about")
 
 resources = os.path.dirname(os.path.abspath(__file__))
-resources = resources + r"\resources"
+RESOURCES = resources + r"\resources"
 screen = screen_operations.ScreenOperations()                
 intf = Interface()
 intf.run()
