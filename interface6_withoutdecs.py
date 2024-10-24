@@ -3,6 +3,7 @@ import random
 import hints
 import screen_operations
 import os
+import requests.exceptions
 
 class Buttons():
     def __init__(self):
@@ -436,13 +437,21 @@ class AboutScreen():
 
 class GameScreen():
     def __init__(self):  # UNCOMMENT BACKEND WHEN IT'S DONE; COMMENTED FOR SPEED
-        #intf.getHints().startGame()
+        self.__connected = True
+        try:
+            pass
+            #intf.getHints().startGame()
+        except requests.exceptions.ConnectionError:
+            self.__connected = False
         self.__page_title = "asdasd" #intf.getHints().returnPageTitle()
         self.__buttons = ImageButtons()
         self.__guess_box_length = 40 #intf.getHints().findLongestLink()
         self.__inputted_text = ""
         self.__guess_box_color = [184, 195, 195]
         self.__animate_guess = False
+
+    def returnConnected(self):
+        return self.__connected
 
     def addToInput(self, char, raw: bool):
         if len(self.__inputted_text) < self.__guess_box_length:
@@ -456,6 +465,14 @@ class GameScreen():
             self.__inputted_text = self.__inputted_text[:-1]
 
     def showScreen(self, new: bool):
+        self.__drawHintsBox(new)
+        if self.__animate_guess:
+            self.__guessAnimation(self.__color_to_animate_guess)  # flash green or red on guess box
+        self.__drawGuessBox()
+        screen.centreTextHorizontally(self.__page_title, fr"{RESOURCES}\Helvetica-Bold.ttf", 40, (0, 0, 0), 100)
+        screen.centreTextHorizontally(self.__inputted_text, fr"{RESOURCES}\Helvetica.ttf", 32, (0, 0, 0), 200)
+
+    def __drawHintsBox(self, new):
         screen.createRectangle("#9cacac", (178, 372), (1190, 406))
         screen.createRectangle("#c6cfcf", (93, 42), (1232, 385))
         screen.createRectangle("#c6cfcf", (174, 368), (1192, 408))
@@ -465,11 +482,6 @@ class GameScreen():
         self.__buttons.add('sentence', (1200, 570), (158, 59), new=new, disable=True)
         self.__buttons.add('vowel', (1200, 640), (158, 59), new=new, disable=True)
         self.__buttons.add('startswith', (1200, 710), (158, 59), new=new, disable=True)
-        if self.__animate_guess:
-            self.__guessAnimation(self.__color_to_animate_guess)
-        self.__drawGuessBox()
-        screen.centreTextHorizontally(self.__page_title, fr"{RESOURCES}\Helvetica-Bold.ttf", 40, (0, 0, 0), 100)
-        screen.centreTextHorizontally(self.__inputted_text, fr"{RESOURCES}\Helvetica.ttf", 32, (0, 0, 0), 200)
 
     def __drawGuessBox(self):
         screen.createRectangle("#9cacac", [20*self.__guess_box_length+4, 52], ((700-10*self.__guess_box_length)-2, 190))
@@ -539,7 +551,7 @@ class GameScreen():
                 self.__guessAnimationSetup()
                 self.__color_to_animate_guess = (232, 116, 116)
             self.__inputted_text = ""
-            
+
 class Interface():
     def __init__(self):
         self.__run = True
@@ -568,6 +580,8 @@ class Interface():
         self.__status = "home"
         self.__shift = False
         self.__hints: hints.Hints = hints.Hints()  # typeset so the methods come up
+        self.__icon = pygame.image.load(fr"{RESOURCES}\icon.png").convert_alpha()  # MOVE ALL OF THIS TO SCREEN OPERATIONS
+        pygame.display.set_icon(self.__icon)
 
     def run(self):
         self.__homescreen = HomeScreen()
@@ -582,11 +596,22 @@ class Interface():
                 self.__runHelpScreen()
             elif self.__status == "about":
                 self.__runAboutScreen()
+            elif self.__status == "disconnected":
+                self.__runDisconnectedScreen()
             screen.updateScreen()
         pygame.quit()
 
     def getHints(self):
         return self.__hints
+    
+    def __runDisconnectedScreen(self):
+        screen.blankScreen()
+        screen.centreTextHorizontally("No connection", fr"{RESOURCES}\Helvetica-Bold.ttf", 80, (0, 0, 0), 100)
+        screen.centreTextHorizontally("Please ensure you are connected to the internet, and restart the game.", fr"{RESOURCES}\Helvetica.ttf", 40, (0, 0, 0), 250)
+        screen.centreTextHorizontally("There is a very small chance the Wikimedia servers are down. But it's probably you.", fr"{RESOURCES}\Helvetica.ttf", 14, (0, 0, 0), 350)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.__run = False
 
     def __runGameScreen(self):
         self.__gamescreen.checkTextButtons(pygame.mouse.get_pos(), click=False)
@@ -628,8 +653,12 @@ class Interface():
                     screen.blankScreen()
                     screen.stopMusic()
                     self.__gamescreen = GameScreen()
-                    self.__gamescreen.showScreen(True)
-                    self.__status = "game"
+                    if self.__gamescreen.returnConnected():
+                        self.__gamescreen.showScreen(True)
+                        self.__status = "game"
+                        pygame.mixer.music.set_volume(0.1)
+                    else:
+                        self.__status = "disconnected"
 
                 elif self.__homescreen_button == "howtoplay":
                     screen.blankScreen()
