@@ -146,10 +146,14 @@ class ImageButtons():
         else:
             self.__hover = False
 
-        if self.__hover and click and self.__buttons_status[name] != "disabled" and self.__buttons_disabled_allowed[name]:
+        if self.__hover and click and self.__buttons_status[name] != "disabled":  # why is this here
             pygame.mixer.music.load(fr"{RESOURCES}\button.wav")
             pygame.mixer.music.play()
-            self.__createButton(name, self.__hover_location, self.__buttons_dimensions[name], hover=False, disabled=True)
+            print(name, "click")
+            if self.__buttons_disabled_allowed[name]:  # only disable the button if it's allowed to be
+                self.__createButton(name, self.__hover_location, self.__buttons_dimensions[name], hover=False, disabled=True)
+            else:
+                self.__createButton(name, self.__hover_location, self.__buttons_dimensions[name], hover=False, disabled=False)
             return (True, name)
         else:
             if self.__buttons_status[name] == "disabled":
@@ -439,13 +443,12 @@ class GameScreen():
     def __init__(self):  # UNCOMMENT BACKEND WHEN IT'S DONE; COMMENTED FOR SPEED
         self.__connected = True
         try:
-            pass
-            #intf.getHints().startGame()
+            intf.getHints().startGame()
         except requests.exceptions.ConnectionError:
             self.__connected = False
-        self.__page_title = "asdasd" #intf.getHints().returnPageTitle()
+        self.__page_title = intf.getHints().returnPageTitle()
         self.__buttons = ImageButtons()
-        self.__guess_box_length = 40 #intf.getHints().findLongestLink()
+        self.__guess_box_length = intf.getHints().findLongestLink()
         self.__inputted_text = ""
         self.__guess_box_color = [184, 195, 195]
         self.__animate_guess = False
@@ -471,6 +474,11 @@ class GameScreen():
         self.__drawGuessBox()
         screen.centreTextHorizontally(self.__page_title, fr"{RESOURCES}\Helvetica-Bold.ttf", 40, (0, 0, 0), 100)
         screen.centreTextHorizontally(self.__inputted_text, fr"{RESOURCES}\Helvetica.ttf", 32, (0, 0, 0), 200)
+        if new:
+            self.__buttons.add("sound_off", (700, 700), (50, 50), new=new, disable=False)
+            self.__buttons.add("sound_on", (700, 700), (50, 50), new=new, disable=False)
+        else:
+            self.__buttons.add(intf.checkMute(), (700, 700), (50, 50), new=new, disable=False)
 
     def __drawHintsBox(self, new):
         screen.createRectangle("#9cacac", (178, 372), (1190, 406))
@@ -533,6 +541,8 @@ class GameScreen():
                 pass
             elif self.__clicked[1] == "quit":
                 return "quit"
+            elif self.__clicked[1] == "sound_on" or self.__clicked[1] == "sound_off":
+                intf.setMute()
         else:
             self.__buttons.checkButtonHover(mouse, click)
 
@@ -579,6 +589,7 @@ class Interface():
         }
         self.__status = "home"
         self.__shift = False
+        self.__mute = False
         self.__hints: hints.Hints = hints.Hints()  # typeset so the methods come up
         self.__icon = pygame.image.load(fr"{RESOURCES}\icon.png").convert_alpha()  # MOVE ALL OF THIS TO SCREEN OPERATIONS
         pygame.display.set_icon(self.__icon)
@@ -586,7 +597,7 @@ class Interface():
     def run(self):
         self.__homescreen = HomeScreen()
         self.__homescreen.showScreen("none")
-        #screen.playMusic()
+        screen.playMusic()
         while self.__run == True:
             if self.__status == "home":
                 self.__runHomeScreen()
@@ -621,7 +632,7 @@ class Interface():
                 self.__run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.__gamescreen_button = self.__gamescreen.checkTextButtons(pygame.mouse.get_pos(), click=True)
-                if self.__gamescreen_button == "quit":  # make these do things in the game class
+                if self.__gamescreen_button == "quit":  # IMPLEMENT BUT MAKE ALL OTHERS IN THE PYGAME CLASS
                     pass
             elif event.type == pygame.KEYDOWN:
                 if event.key != 13 and event.key != 8: #if not enter (13) or backspace (8)
@@ -698,7 +709,20 @@ class Interface():
                     screen.blankScreen()
                     self.__status = "home"
                     self.__homescreen = HomeScreen()
-                    self.__homescreen.showScreen("about")
+                    self.__homescreen.showScreen("about")        
+
+    def setMute(self):
+        if self.__mute:
+            pygame.mixer.music.set_volume(0.1)
+        else:
+            pygame.mixer.music.set_volume(0)
+        self.__mute = not self.__mute
+
+    def checkMute(self):
+        if self.__mute:
+            return "sound_off"
+        else:
+            return "sound_on" 
 
 resources = os.path.dirname(os.path.abspath(__file__))
 RESOURCES = resources + r"\resources"
