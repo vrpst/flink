@@ -36,26 +36,27 @@ def findLink(text):  # FINDS THE RAW FIRST LINK IN THE PAGE AND THE STARTING SEN
     redirect_bool = not checkRedirect(text)
     while not first_link_found or not sentence_ended:
         #print(open_curly_counter, close_curly_counter, open_bracket, close_bracket, open_square_counter, close_square_counter, sentence_start, sentence_ended, char_counter)
-        if not first_link_found:
-            if text[char_counter] == "{":
-                open_curly_counter += 1 
+        if text[char_counter] == "{":
+            open_curly_counter += 1 
 
-            if text[char_counter] == "}":
-                close_curly_counter += 1
+        if text[char_counter] == "}":
+            close_curly_counter += 1
 
-            if text[char_counter] == "(":
-                open_bracket += 1
-            
-            if text[char_counter] == ")":
-                close_bracket += 1
+        if text[char_counter] == "(":
+            open_bracket += 1
+        
+        if text[char_counter] == ")":
+            close_bracket += 1
 
-            if text[char_counter] == "[":
+        if text[char_counter] == "[":
+            if not first_link_found:
                 if open_square_counter == close_square_counter and open_curly_counter == close_curly_counter:
                     link_start = char_counter
-                open_square_counter += 1
+            open_square_counter += 1
 
-            if text[char_counter] == "]":
-                close_square_counter += 1
+        if text[char_counter] == "]":
+            close_square_counter += 1
+            if not first_link_found:
                 if open_square_counter == close_square_counter and open_curly_counter == close_curly_counter and open_bracket == close_bracket:
                     link_end = char_counter+1
                     link_test = text[link_start:link_end]
@@ -78,6 +79,7 @@ def findLink(text):  # FINDS THE RAW FIRST LINK IN THE PAGE AND THE STARTING SEN
                     elif text[char_counter:char_counter+5] == ".<ref" or (text[char_counter] == "." and ord(text[char_counter+1]) in valid_nextchars): # refs
                         first_sentence = text[sentence_start:char_counter+1]
                         sentence_ended = True
+
         else:  #  if the page is a redirect just skip the sentence
             sentence_ended = True
         
@@ -206,7 +208,7 @@ def run():
     real_link_list_cap = []
     display_link_list = []
     fs_list = []
-    pagetofind = "Pennsylvania"
+    pagetofind = "Pablo Jerez"
     va_list = ["the arts", "earth", "human", "human history", "life", "mathematics", "philosophy", "science", "society", "technology"]
     while not linkloop:
         pagetext = getPageText(pagetofind)  # get the text of the page

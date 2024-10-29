@@ -4,6 +4,7 @@ import hints
 import screen_operations
 import os
 import requests.exceptions
+import threading
 
 class Buttons():
     def __init__(self):
@@ -149,7 +150,6 @@ class ImageButtons():
         if self.__hover and click and self.__buttons_status[name] != "disabled":  # why is this here
             pygame.mixer.music.load(fr"{RESOURCES}\button.wav")
             pygame.mixer.music.play()
-            print(name, "click")
             if self.__buttons_disabled_allowed[name]:  # only disable the button if it's allowed to be
                 self.__createButton(name, self.__hover_location, self.__buttons_dimensions[name], hover=False, disabled=True)
             else:
@@ -243,12 +243,13 @@ class HomeScreen():
         self.__no_article_shown = True
         self.__question_fade = [2.475, 2.5875, 2.5875]  # start inverted because it will be multiplied by -1 at start
         self.__subtitle_to_show = ""
+        self.__startgame_text = "[[start game]]"
 
     def showScreen(self, prev):
         screen.showText("Flink", fr"{RESOURCES}\Helvetica.ttf", 100, (0, 0, 0), (100, 100))
         screen.showText("How well do you know", fr"{RESOURCES}\Helvetica-Bold.ttf", 18, (0, 0, 0), (105, 200))
         self.__showEmojis()
-        self.__text_buttons.add("startgame", "[[start game]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=True, usepreviouscolor=False)
+        self.__text_buttons.add("startgame", self.__startgame_text, fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=True, usepreviouscolor=False)
         self.__text_buttons.add("howtoplay", "[[how to play]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=True, usepreviouscolor=False)
         self.__text_buttons.add("about", "[[about]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=True, usepreviouscolor=False)
         self.__prev = prev
@@ -288,7 +289,7 @@ class HomeScreen():
         self.__article_sub_width = screen.showText(self.__subtitle_to_show, fr"{RESOURCES}\Helvetica.ttf", 18, self.__subtitle_color, (105+self.__base_sub_width, 200))
         self.__updateArticle()  # update them for the fading
         screen.showText("?", fr"{RESOURCES}\Helvetica.ttf", 18, self.__question_color, (105+self.__question_pos, 200))
-        self.__text_buttons.add("startgame", "[[start game]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=False, usepreviouscolor=True)
+        self.__text_buttons.add("startgame", self.__startgame_text, fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 300), new=False, usepreviouscolor=True)
         self.__text_buttons.add("howtoplay", "[[how to play]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 380), new=False, usepreviouscolor=True)
         self.__text_buttons.add("about", "[[about]]", fr"{RESOURCES}\Helvetica.ttf", 30, [0, 0, 0], (105, 460), new=False, usepreviouscolor=True)
         self.__showEmojis()
@@ -337,6 +338,9 @@ class HomeScreen():
     def __showEmojis(self):
         self.__emojis_image = pygame.image.load(fr"{RESOURCES}\emojis_test.png").convert_alpha()
         screen.screen.blit(self.__emojis_image, (700, 290))
+
+    def setLoading(self):
+        self.__startgame_text = "[[loading]]"
 
 class HelpScreen():  # NOT DONE FINISH CODING
     def __init__(self):
@@ -442,19 +446,29 @@ class AboutScreen():
 class GameScreen():
     def __init__(self):  # UNCOMMENT BACKEND WHEN IT'S DONE; COMMENTED FOR SPEED
         self.__connected = True
+        self.__hints = intf.getHints()
+        self.__finished_setup = False
+
+    def setupGame(self):
         try:
-            intf.getHints().startGame()
+            self.__hints.startGame()
         except requests.exceptions.ConnectionError:
             self.__connected = False
-        self.__page_title = intf.getHints().returnPageTitle()
+        self.__finished_setup = True
+
+    def startGame(self):
+        self.__page_title = self.__hints.returnPageTitle()
         self.__buttons = ImageButtons()
-        self.__guess_box_length = intf.getHints().findLongestLink()
+        self.__guess_box_length = self.__hints.findLongestLink()
         self.__inputted_text = ""
         self.__guess_box_color = [184, 195, 195]
         self.__animate_guess = False
 
     def returnConnected(self):
         return self.__connected
+    
+    def returnFinishedSetup(self):
+        return self.__finished_setup
 
     def addToInput(self, char, raw: bool):
         if len(self.__inputted_text) < self.__guess_box_length:
@@ -548,12 +562,12 @@ class GameScreen():
 
     def checkGuess(self):
         if self.__inputted_text != "":
-            if intf.getHints().checkGuess(self.__inputted_text):  # get the text inputted and check if the guess is correct
+            if self.__hints.checkGuess(self.__inputted_text):  # get the text inputted and check if the guess is correct
                 pygame.mixer.music.load(fr"{RESOURCES}\correct.wav")
                 pygame.mixer.music.play()
                 self.__guessAnimationSetup()
                 self.__color_to_animate_guess = (190, 227, 188)
-                self.__page_title = intf.getHints().returnPageTitle()
+                self.__page_title = self.__hints.returnPageTitle()
                 self.__buttons.resetDisabledButtons()
             else:
                 pygame.mixer.music.load(fr"{RESOURCES}\incorrect.wav")
@@ -601,6 +615,13 @@ class Interface():
         while self.__run == True:
             if self.__status == "home":
                 self.__runHomeScreen()
+            elif self.__status == "setupgame":
+                self.__gamescreen = GameScreen()
+                self.__sg_thread = threading.Thread(target=self.__startGame)
+                self.__sg_thread.start()
+                self.__status = "setupinprogress"
+            elif self.__status == "setupinprogress":
+                self.__runSetupGame()
             elif self.__status == "game":
                 self.__runGameScreen()
             elif self.__status == "howtoplay":  # create screens
@@ -611,6 +632,25 @@ class Interface():
                 self.__runDisconnectedScreen()
             screen.updateScreen()
         pygame.quit()
+
+    def __runSetupGame(self):
+        self.__homescreen.setLoading()
+        self.__homescreen.remakeScreen()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.__run = False
+        if self.__gamescreen.returnFinishedSetup():
+            self.__sg_thread.join()
+            if not self.__gamescreen.returnConnected():
+                self.__status = "disconnected"
+            else:
+                self.__gamescreen.startGame()  # assign all the variables
+                self.__gamescreen.showScreen(True)
+                self.__status = "game"
+                pygame.mixer.music.set_volume(0.1)
+
+    def __startGame(self):            
+        self.__gamescreen.setupGame()
 
     def getHints(self):
         return self.__hints
@@ -661,15 +701,7 @@ class Interface():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.__homescreen_button = self.__homescreen.checkTextButtons(pygame.mouse.get_pos(), click=True)
                 if self.__homescreen_button == "game":
-                    screen.blankScreen()
-                    screen.stopMusic()
-                    self.__gamescreen = GameScreen()
-                    if self.__gamescreen.returnConnected():
-                        self.__gamescreen.showScreen(True)
-                        self.__status = "game"
-                        pygame.mixer.music.set_volume(0.1)
-                    else:
-                        self.__status = "disconnected"
+                    self.__status = "setupgame"
 
                 elif self.__homescreen_button == "howtoplay":
                     screen.blankScreen()
@@ -733,8 +765,6 @@ intf.run()
 #TO DO
 # add progress bar
 # add mute and back buttons
-# add sfx
 # link button functionality
-# color scheme change?
-# multithread home screen
-# add placeholder funct
+# fix game end but
+# add placeholder funct and fs
