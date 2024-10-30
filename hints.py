@@ -13,8 +13,8 @@ class Hints():
         self.__placeholders_real = []
 
     def startGame(self):  # UNCOMMENT WHEN DONE TO ACTUALLY LINK UP RATHER THAN HARDCODE
-        self.__lists = get_articles_api.run()
-        '''self.__lists = [['Pennsylvania', 'U.S. state', 'United States', 'North America', 'Continent', 'Convention (norm)', 'Social norm', 'Acceptance', 'Psychology', 'Mind', 'Thought', 'Cognition', 'Action (philosophy)', 'Philosophy'],
+        #self.__lists = get_articles_api.run()
+        self.__lists = [['Pennsylvania', 'U.S. state', 'United States', 'North America', 'Continent', 'Convention (norm)', 'Social norm', 'Acceptance', 'Psychology', 'Mind', 'Thought', 'Cognition', 'Action (philosophy)', 'Philosophy'],
         ['U.S. state', 'United States', 'North America', 'continent', 'convention', 'social norm', 'acceptable', 'psychology', 'mind', 'thinks', 'cognitive', 'action', 'philosophy'],
         ['Pennsylvania, officially the Commonwealth of Pennsylvania, is a U.S. state spanning the Mid-Atlantic, Northeastern, Appalachian, and Great Lakes regions of the United States.',
          'In the United States, a state is a constituent political entity, of which there are 50.', 'The United States of America, commonly known as the United States or America, is a country primarily located in North America.',
@@ -25,9 +25,10 @@ class Hints():
          'Psychology is the scientific study of mind and behavior.', 'The mind is that which thinks, feels, perceives, imagines, remembers, and wills.',
          'In their most common sense, the terms thought and thinking refer to cognitive processes that can happen independently of sensory stimulation.',
          'Cognition is the "mental action or process of acquiring knowledge and understanding through thought, experience, and the senses".',
-         "In philosophy, an action is an event that an agent performs for a purpose, that is, guided by the person's intention."]]'''
+         "In philosophy, an action is an event that an agent performs for a purpose, that is, guided by the person's intention."]]
         
         self.__real_links = self.__lists[0]  # create the list of actual article titles (will get trimmed as game goes on)
+        print(self.__real_links)
         self.__real_link_dupe = self.__lists[0]   # create the list of article titles unmodified (for progression)
         self.__display_links = self.__lists[1]  # create list of displayed links
         self.__prog_length = len(self.__lists[0])  # TO BE IMPLEMENTED; DO SOMETHING
@@ -62,6 +63,7 @@ class Hints():
             if len(i) > self.__longest[0]:
                 self.__longest[0] = len(i)
                 self.__longest[1] = i
+        print(self.__longest[1])
         return self.__longest[0]
     
     def returnPageTitle(self):
@@ -83,7 +85,7 @@ class Hints():
             if self.__display_links[0][i] in self.__vowels:
                 self.__new_placeholder += self.__display_links[0][i]   # i+1 to account for `
             else:
-                self.__new_placeholder += self.__placeholders[0][i+1]
+                self.__new_placeholder += self.__placeholders[0][i]
         self.__placeholders[0] = self.__new_placeholder
         self.__updateSentence()
         return self.__verifyAndSendHint()

@@ -38,8 +38,8 @@ class ScreenOperations():
         self.__text = self.__text_font.render(text, True, color)
         self.screen.blit(self.__text, (700-(self.__text.get_width()/2), location))
 
-    def createRectangle(self, color: str, dimensions: list, location: tuple):
-        return pygame.draw.rect(self.screen, color, pygame.Rect(location[0], location[1], dimensions[0], dimensions[1]))
+    def createRectangle(self, color: str, dimensions: list, location: tuple, radius=0):
+        return pygame.draw.rect(self.screen, color, pygame.Rect(location[0], location[1], dimensions[0], dimensions[1]), border_radius=radius)
 
     def createCircle(self, color: str, radius: float, location: tuple):
         return pygame.draw.circle(self.screen, color, location, radius)

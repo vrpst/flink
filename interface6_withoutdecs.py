@@ -461,8 +461,14 @@ class GameScreen():
         self.__buttons = ImageButtons()
         self.__guess_box_length = self.__hints.findLongestLink()
         self.__inputted_text = ""
-        self.__guess_box_color = [184, 195, 195]
+        self.__guess_box_color = [207, 207, 207]
         self.__animate_guess = False
+        self.__progress_box = len(self.__hints.getLinks()[0]) - 1
+        self.__progress_box_correct = -1
+        self.__hints_used = []
+        for i in range(self.__progress_box):
+            self.__hints_used.append(False)
+
 
     def returnConnected(self):
         return self.__connected
@@ -481,18 +487,71 @@ class GameScreen():
         if len(self.__inputted_text) > 0:
             self.__inputted_text = self.__inputted_text[:-1]
 
+    def __drawProgressBoxes(self):
+        for i in range(self.__progress_box):
+            if i <= self.__progress_box_correct:
+                screen.createRectangle("#9cacac", (50, 50), (100, 100+55*i), radius=5)
+                if self.__hints_used[i]:
+                    screen.createRectangle((255, 242, 137), (46, 46), (102, 102+55*i), radius=5)
+                else:
+                    screen.createRectangle((180, 217, 178), (46, 46), (102, 102+55*i), radius=5)
+            else:
+                screen.createRectangle("#9cacac", (50, 50), (100, 100+55*i), radius=5)
+                screen.createRectangle((207, 207, 207), (46, 46), (102, 102+55*i), radius=5)
+
     def showScreen(self, new: bool):
         self.__drawHintsBox(new)
+        self.__drawProgressBoxes()
         if self.__animate_guess:
             self.__guessAnimation(self.__color_to_animate_guess)  # flash green or red on guess box
         self.__drawGuessBox()
-        screen.centreTextHorizontally(self.__page_title, fr"{RESOURCES}\Helvetica-Bold.ttf", 40, (0, 0, 0), 100)
+        self.__drawPageTitle()
+        self.__drawFirstSentence()
         screen.centreTextHorizontally(self.__inputted_text, fr"{RESOURCES}\Helvetica.ttf", 32, (0, 0, 0), 200)
         if new:
             self.__buttons.add("sound_off", (700, 700), (50, 50), new=new, disable=False)
             self.__buttons.add("sound_on", (700, 700), (50, 50), new=new, disable=False)
         else:
             self.__buttons.add(intf.checkMute(), (700, 700), (50, 50), new=new, disable=False)
+
+    def __drawPageTitle(self):
+        screen.createRectangle("#9cacac", [24*self.__guess_box_length+4, 56], (700-(12*self.__guess_box_length)-2, 96))
+        screen.createRectangle((184, 195, 195), [24*self.__guess_box_length, 52], (700-(12*self.__guess_box_length), 98))
+        screen.centreTextHorizontally(self.__page_title, fr"{RESOURCES}\Helvetica-Bold.ttf", 40, (0, 0, 0), 107)
+
+    def __drawFirstSentence(self):
+        self.__first_sentence = "Hello my name is Lucas and I am very fsdfs at the moment lababa ladidididid lobobobobobo lodod oeejfa."
+        self.__sentence_box_dimensions = self.__calculateSentenceBox(self.__first_sentence)
+        screen.createRectangle("#9cacac", [16*self.__sentence_box_dimensions[0]+4, 40*self.__sentence_box_dimensions[1]+4], (700-(8*self.__sentence_box_dimensions[0])-2, 396))
+        screen.createRectangle((184, 195, 195), [16*self.__sentence_box_dimensions[0], 40*self.__sentence_box_dimensions[1]], (700-(8*self.__sentence_box_dimensions[0]), 398))
+        for i in range(len(self.__sentence_box_dimensions[2])):
+            screen.showText(self.__sentence_box_dimensions[2][i], fr"{RESOURCES}\Helvetica.ttf", 32, (0, 0, 0), (712-(8*self.__sentence_box_dimensions[0])-2, 404+(36*i)))
+
+    def __calculateSentenceBox(self, fs: str):
+        fsl = fs.split()
+        fsl2 = []
+        total = 0
+        total_temp = 0
+        for i in fsl:
+            if total_temp > 45:
+                fsl2.append(total)
+                total_temp = 0
+            total += len(i)+1  # +1 for the space
+            total_temp += len(i)+1
+        if total_temp != 0:
+            fsl2.append(len(fs))
+        for j in range(len(fsl2)-1, 0, -1):
+            fsl2[j] = (fsl2[j-1], fsl2[j])
+        fsl2[0] = (0, fsl2[0])
+        for k in range(len(fsl2)):
+            fsl2[k] = fs[fsl2[k][0]:fsl2[k][1]]  # add sentence to end
+        for m in range(len(fsl2) - 1):
+            fsl2[m] = fsl2[m][:-1]
+        max_line_length = 0
+        for n in fsl2:
+            if len(n) > max_line_length:
+                max_line_length = len(n)
+        return (max_line_length, len(fsl2), fsl2)
 
     def __drawHintsBox(self, new):
         screen.createRectangle("#9cacac", (178, 372), (1190, 406))
@@ -517,19 +576,19 @@ class GameScreen():
     def __guessAnimation(self, color):
         if self.__to_color == True:
             if round(self.__guess_box_color[0]) != color[0] and round(self.__guess_box_color[1]) != color[1] and round(self.__guess_box_color[2]) != color[2]:
-                self.__guess_box_color[0] += (color[0]-184)/30
-                self.__guess_box_color[1] += (color[1]-195)/30
-                self.__guess_box_color[2] += (color[2]-195)/30
+                self.__guess_box_color[0] += (color[0]-207)/30
+                self.__guess_box_color[1] += (color[1]-207)/30
+                self.__guess_box_color[2] += (color[2]-207)/30
             else:
                 self.__hold += 1
                 if self.__hold == 20:
                     self.__to_color = False
                     self.__hold = 0
         else:
-            if round(self.__guess_box_color[0]) != 184 and round(self.__guess_box_color[1]) != 195 and round(self.__guess_box_color[2]) != 195:
-                self.__guess_box_color[0] -= (color[0]-184)/30
-                self.__guess_box_color[1] -= (color[1]-195)/30
-                self.__guess_box_color[2] -= (color[2]-195)/30
+            if round(self.__guess_box_color[0]) != 207 and round(self.__guess_box_color[1]) != 207 and round(self.__guess_box_color[2]) != 207:
+                self.__guess_box_color[0] -= (color[0]-207)/30
+                self.__guess_box_color[1] -= (color[1]-207)/30
+                self.__guess_box_color[2] -= (color[2]-207)/30
             else:
                 self.__hold += 1
                 if self.__hold == 20:
@@ -544,15 +603,20 @@ class GameScreen():
         if click:
             self.__clicked = self.__buttons.checkButtonHover(mouse, click)
             if self.__clicked[1] == "vowel":
-                pass
+                print(self.__hints.revealsVowels())
+                self.__hints_used[self.__progress_box_correct+1] = True
             elif self.__clicked[1] == "length":
-                pass
+                print(self.__hints.revealLength())
+                self.__hints_used[self.__progress_box_correct+1] = True
             elif self.__clicked[1] == "random":
-                pass
+                print(self.__hints.revealRandom())
+                self.__hints_used[self.__progress_box_correct+1] = True
             elif self.__clicked[1] == "sentence":
-                pass
+                print(self.__hints.revealFirstSentence())
+                self.__hints_used[self.__progress_box_correct+1] = True
             elif self.__clicked[1] == "startswith":
-                pass
+                print(self.__hints.startsWith())
+                self.__hints_used[self.__progress_box_correct+1] = True
             elif self.__clicked[1] == "quit":
                 return "quit"
             elif self.__clicked[1] == "sound_on" or self.__clicked[1] == "sound_off":
@@ -569,6 +633,7 @@ class GameScreen():
                 self.__color_to_animate_guess = (190, 227, 188)
                 self.__page_title = self.__hints.returnPageTitle()
                 self.__buttons.resetDisabledButtons()
+                self.__progress_box_correct += 1
             else:
                 pygame.mixer.music.load(fr"{RESOURCES}\incorrect.wav")
                 pygame.mixer.music.play()
@@ -611,7 +676,7 @@ class Interface():
     def run(self):
         self.__homescreen = HomeScreen()
         self.__homescreen.showScreen("none")
-        screen.playMusic()
+        #screen.playMusic()
         while self.__run == True:
             if self.__status == "home":
                 self.__runHomeScreen()
@@ -768,3 +833,4 @@ intf.run()
 # link button functionality
 # fix game end but
 # add placeholder funct and fs
+# make sentence mandatory 
