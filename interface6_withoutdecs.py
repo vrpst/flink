@@ -376,7 +376,6 @@ class HelpScreen():  # NOT DONE FINISH CODING
         self.__emojis_image = pygame.image.load(fr"{RESOURCES}\emojis_labelled.png").convert_alpha()
         screen.screen.blit(self.__emojis_image, (429, 405))
 
-        
     def checkButtons(self, mouse, click):
         if click:
             self.__clicked = self.__buttons.checkButtonHover(mouse, click)
@@ -468,7 +467,7 @@ class GameScreen():
         self.__hints_used = []
         self.__first_sentence = self.__hints.revealFirstSentence()
         for i in range(self.__progress_box):
-            self.__hints_used.append(False)
+            self.__hints_used.append(0)
 
     def returnConnected(self):
         return self.__connected
@@ -491,10 +490,12 @@ class GameScreen():
         for i in range(self.__progress_box):
             if i <= self.__progress_box_correct:
                 screen.createRectangle("#9cacac", (50, 50), (100, 100+55*i), radius=5)
-                if self.__hints_used[i]:
+                if self.__hints_used[i] == 1:  # if hint used
                     screen.createRectangle((255, 242, 137), (46, 46), (102, 102+55*i), radius=5)
-                else:
+                elif self.__hints_used[i] == 0:  # if hint not used
                     screen.createRectangle((180, 217, 178), (46, 46), (102, 102+55*i), radius=5)
+                elif self.__hints_used[i] == 2:  # if link was fully revealed by hints
+                    screen.createRectangle((180, 0, 0), (46, 46), (102, 102+55*i), radius=5)
             else:
                 screen.createRectangle("#9cacac", (50, 50), (100, 100+55*i), radius=5)
                 screen.createRectangle((207, 207, 207), (46, 46), (102, 102+55*i), radius=5)
@@ -553,15 +554,13 @@ class GameScreen():
         return (max_line_length, len(fsl2), fsl2)
 
     def __drawHintsBox(self, new):
-        screen.createRectangle("#9cacac", (178, 372), (1190, 406))
+        screen.createRectangle("#9cacac", (178, 232), (1190, 406))
         screen.createRectangle("#c6cfcf", (93, 42), (1232, 385))
-        screen.createRectangle("#c6cfcf", (174, 368), (1192, 408))
+        screen.createRectangle("#c6cfcf", (174, 228), (1192, 408))
         screen.showText("Hints", fr"{RESOURCES}\Helvetica.ttf", 32, (0, 0, 0), (1242, 390))
-        self.__buttons.add('length', (1200, 430), (158, 59), new=new, disable=True)
-        self.__buttons.add('random', (1200, 500), (158, 59), new=new, disable=True)
-        self.__buttons.add('sentence', (1200, 570), (158, 59), new=new, disable=True)
-        self.__buttons.add('vowel', (1200, 640), (158, 59), new=new, disable=True)
-        self.__buttons.add('startswith', (1200, 710), (158, 59), new=new, disable=True)
+        self.__buttons.add('random', (1200, 430), (158, 59), new=new, disable=False)
+        self.__buttons.add('vowel', (1200, 500), (158, 59), new=new, disable=True)
+        self.__buttons.add('startswith', (1200, 570), (158, 59), new=new, disable=True)
 
     def __drawGuessBox(self):
         screen.createRectangle("#9cacac", [20*self.__guess_box_length+4, 52], ((700-10*self.__guess_box_length)-2, 190))
@@ -603,13 +602,17 @@ class GameScreen():
             self.__clicked = self.__buttons.checkButtonHover(mouse, click)
             if self.__clicked[1] == "vowel":
                 self.__first_sentence = self.__hints.revealsVowels()
-                self.__hints_used[self.__progress_box_correct+1] = True
+                self.__hints_used[self.__progress_box_correct+1] = 1
             elif self.__clicked[1] == "random":
                 self.__first_sentence = self.__hints.revealRandom()
-                self.__hints_used[self.__progress_box_correct+1] = True
+                if self.__first_sentence == False:
+                    self.__hints_used[self.__progress_box_correct+1] = 2
+                    self.checkGuess(override=True)
+                else:
+                    self.__hints_used[self.__progress_box_correct+1] = 1
             elif self.__clicked[1] == "startswith":
                 self.__first_sentence = self.__hints.startsWith()
-                self.__hints_used[self.__progress_box_correct+1] = True
+                self.__hints_used[self.__progress_box_correct+1] = 1
             elif self.__clicked[1] == "quit":
                 return "quit"
             elif self.__clicked[1] == "sound_on" or self.__clicked[1] == "sound_off":
@@ -617,23 +620,30 @@ class GameScreen():
         else:
             self.__buttons.checkButtonHover(mouse, click)
 
-    def checkGuess(self):
-        if self.__inputted_text != "":
-            if self.__hints.checkGuess(self.__inputted_text):  # get the text inputted and check if the guess is correct
-                pygame.mixer.music.load(fr"{RESOURCES}\correct.wav")
-                pygame.mixer.music.play()
-                self.__guessAnimationSetup()
+    def checkGuess(self, override=False):  # override used to move to next link when fully revealed
+        if override:
                 self.__color_to_animate_guess = (190, 227, 188)
                 self.__page_title = self.__hints.returnPageTitle()
                 self.__first_sentence = self.__hints.revealFirstSentence()
                 self.__buttons.resetDisabledButtons()
                 self.__progress_box_correct += 1
-            else:
-                pygame.mixer.music.load(fr"{RESOURCES}\incorrect.wav")
-                pygame.mixer.music.play()
-                self.__guessAnimationSetup()
-                self.__color_to_animate_guess = (232, 116, 116)
-            self.__inputted_text = ""
+        else:
+            if self.__inputted_text != "":
+                if self.__hints.checkGuess(self.__inputted_text):  # get the text inputted and check if the guess is correct
+                    pygame.mixer.music.load(fr"{RESOURCES}\correct.wav")
+                    pygame.mixer.music.play()
+                    self.__guessAnimationSetup()
+                    self.__color_to_animate_guess = (190, 227, 188)
+                    self.__page_title = self.__hints.returnPageTitle()
+                    self.__first_sentence = self.__hints.revealFirstSentence()
+                    self.__buttons.resetDisabledButtons()
+                    self.__progress_box_correct += 1
+                else:
+                    pygame.mixer.music.load(fr"{RESOURCES}\incorrect.wav")
+                    pygame.mixer.music.play()
+                    self.__guessAnimationSetup()
+                    self.__color_to_animate_guess = (232, 116, 116)
+                self.__inputted_text = ""
 
 class Interface():
     def __init__(self):

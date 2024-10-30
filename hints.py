@@ -63,7 +63,6 @@ class Hints():
             if len(i) > self.__longest[0]:
                 self.__longest[0] = len(i)
                 self.__longest[1] = i
-        print(self.__longest[1])
         return self.__longest[0]
     
     def returnPageTitle(self):
@@ -73,7 +72,6 @@ class Hints():
         self.__split_link = self.__display_links[0].split(" ")
         for i in range(len(self.__split_link)):
             self.__split_link[i] = len(self.__split_link[i])
-        print(self.__length_hints[0])
         
     def revealFirstSentence(self):  ## WORKS ## REVEALS THE FIRST SENTENCE
         return self.__updateSentence()
@@ -136,9 +134,7 @@ class Hints():
     def __verifyAndSendHint(self):  # used to verify the link hasn't been revealed by all the hints
         if self.__placeholders[0] == self.__display_links[0]:
             self.__moveToNextLink()
-            if len(self.__real_links) == 1:
-                # LINK WAS FULLY REVEALED; DO SOMETHING TO ACKNOWLEDGE
-                pass
+            return False
         else:
             return self.revealFirstSentence()
 
