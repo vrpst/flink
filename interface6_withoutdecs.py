@@ -466,9 +466,9 @@ class GameScreen():
         self.__progress_box = len(self.__hints.getLinks()[0]) - 1
         self.__progress_box_correct = -1
         self.__hints_used = []
+        self.__first_sentence = self.__hints.revealFirstSentence()
         for i in range(self.__progress_box):
             self.__hints_used.append(False)
-
 
     def returnConnected(self):
         return self.__connected
@@ -520,7 +520,6 @@ class GameScreen():
         screen.centreTextHorizontally(self.__page_title, fr"{RESOURCES}\Helvetica-Bold.ttf", 40, (0, 0, 0), 107)
 
     def __drawFirstSentence(self):
-        self.__first_sentence = "Hello my name is Lucas and I am very fsdfs at the moment lababa ladidididid lobobobobobo lodod oeejfa."
         self.__sentence_box_dimensions = self.__calculateSentenceBox(self.__first_sentence)
         screen.createRectangle("#9cacac", [16*self.__sentence_box_dimensions[0]+4, 40*self.__sentence_box_dimensions[1]+4], (700-(8*self.__sentence_box_dimensions[0])-2, 396))
         screen.createRectangle((184, 195, 195), [16*self.__sentence_box_dimensions[0], 40*self.__sentence_box_dimensions[1]], (700-(8*self.__sentence_box_dimensions[0]), 398))
@@ -603,19 +602,13 @@ class GameScreen():
         if click:
             self.__clicked = self.__buttons.checkButtonHover(mouse, click)
             if self.__clicked[1] == "vowel":
-                print(self.__hints.revealsVowels())
-                self.__hints_used[self.__progress_box_correct+1] = True
-            elif self.__clicked[1] == "length":
-                print(self.__hints.revealLength())
+                self.__first_sentence = self.__hints.revealsVowels()
                 self.__hints_used[self.__progress_box_correct+1] = True
             elif self.__clicked[1] == "random":
-                print(self.__hints.revealRandom())
-                self.__hints_used[self.__progress_box_correct+1] = True
-            elif self.__clicked[1] == "sentence":
-                print(self.__hints.revealFirstSentence())
+                self.__first_sentence = self.__hints.revealRandom()
                 self.__hints_used[self.__progress_box_correct+1] = True
             elif self.__clicked[1] == "startswith":
-                print(self.__hints.startsWith())
+                self.__first_sentence = self.__hints.startsWith()
                 self.__hints_used[self.__progress_box_correct+1] = True
             elif self.__clicked[1] == "quit":
                 return "quit"
@@ -632,6 +625,7 @@ class GameScreen():
                 self.__guessAnimationSetup()
                 self.__color_to_animate_guess = (190, 227, 188)
                 self.__page_title = self.__hints.returnPageTitle()
+                self.__first_sentence = self.__hints.revealFirstSentence()
                 self.__buttons.resetDisabledButtons()
                 self.__progress_box_correct += 1
             else:
@@ -828,9 +822,9 @@ intf = Interface()
 intf.run()
 
 #TO DO
-# add progress bar
 # add mute and back buttons
 # link button functionality
 # fix game end but
 # add placeholder funct and fs
-# make sentence mandatory 
+# remove redundant buttons
+# fix random button to not hide instantly

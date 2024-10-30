@@ -76,7 +76,7 @@ class Hints():
         print(self.__length_hints[0])
         
     def revealFirstSentence(self):  ## WORKS ## REVEALS THE FIRST SENTENCE
-        return self.__first_sentences[0]
+        return self.__updateSentence()
 
     def revealsVowels(self):  ## WORKS ##
         self.__vowels = ("a", "e", "i", "o", "u", "A", "E", "I", "O", "U")
@@ -99,10 +99,10 @@ class Hints():
         return self.__verifyAndSendHint()
 
     def startsWith(self):  ## NEED TO TEST
-        self.__placeholders[0] = "`" + self.__display_links[0][0] + self.__placeholders[0][2:]
         for i in range(len(self.__display_links[0])):
+            self.__placeholders[0] = self.__display_links[0][0] + self.__placeholders[0][1:]  # do the first manually (no space before)
             if self.__display_links[0][i] == " ":
-                self.__placeholders[0] = self.__placeholders[0][:i+2] + self.__display_links[0][i+1] + self.__placeholders[0][i+3:]  # this shouldn't be a problem with adding because no link ends in a space
+                self.__placeholders[0] = self.__placeholders[0][:i+1] + self.__display_links[0][i+1] + self.__placeholders[0][i+2:]  # this shouldn't be a problem with adding because no link ends in a space
         self.__updateSentence()
         return self.__verifyAndSendHint()            
         
@@ -131,7 +131,7 @@ class Hints():
 
     def __updateSentence(self):  ## WORKS ## # update the sentence the word is used in with the hints that have been used
         self.__mono = self.__first_sentences[0].index("_")
-        self.__first_sentences[0] = self.__first_sentences[0][:self.__mono] + self.__placeholders[0] + self.__first_sentences[0][self.__mono+len(self.__placeholders[0]):]
+        return self.__first_sentences[0][:self.__mono] + self.__placeholders[0] + self.__first_sentences[0][self.__mono+len(self.__placeholders[0]):]
 
     def __verifyAndSendHint(self):  # used to verify the link hasn't been revealed by all the hints
         if self.__placeholders[0] == self.__display_links[0]:
@@ -140,7 +140,7 @@ class Hints():
                 # LINK WAS FULLY REVEALED; DO SOMETHING TO ACKNOWLEDGE
                 pass
         else:
-            return self.__placeholders[0]
+            return self.revealFirstSentence()
 
     def __moveToNextLink(self):  ## WORKS I THINK ##
         self.__real_links = self.__real_links[1:]
