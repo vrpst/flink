@@ -13,8 +13,8 @@ class Hints():
         self.__placeholders_real = []
 
     def startGame(self):  # UNCOMMENT WHEN DONE TO ACTUALLY LINK UP RATHER THAN HARDCODE
-        #self.__lists = get_articles_api.run()
-        self.__lists = [['Pennsylvania', 'U.S. state', 'United States', 'North America', 'Continent', 'Convention (norm)', 'Social norm', 'Acceptance', 'Psychology', 'Mind', 'Thought', 'Cognition', 'Action (philosophy)', 'Philosophy'],
+        self.__lists = get_articles_api.run()
+        '''self.__lists = [['Pennsylvania', 'U.S. state', 'United States', 'North America', 'Continent', 'Convention (norm)', 'Social norm', 'Acceptance', 'Psychology', 'Mind', 'Thought', 'Cognition', 'Action (philosophy)', 'Philosophy'],
         ['U.S. state', 'United States', 'North America', 'continent', 'convention', 'social norm', 'acceptable', 'psychology', 'mind', 'thinks', 'cognitive', 'action', 'philosophy'],
         ['Pennsylvania, officially the Commonwealth of Pennsylvania, is a U.S. state spanning the Mid-Atlantic, Northeastern, Appalachian, and Great Lakes regions of the United States.',
          'In the United States, a state is a constituent political entity, of which there are 50.', 'The United States of America, commonly known as the United States or America, is a country primarily located in North America.',
@@ -25,7 +25,7 @@ class Hints():
          'Psychology is the scientific study of mind and behavior.', 'The mind is that which thinks, feels, perceives, imagines, remembers, and wills.',
          'In their most common sense, the terms thought and thinking refer to cognitive processes that can happen independently of sensory stimulation.',
          'Cognition is the "mental action or process of acquiring knowledge and understanding through thought, experience, and the senses".',
-         "In philosophy, an action is an event that an agent performs for a purpose, that is, guided by the person's intention."]]
+         "In philosophy, an action is an event that an agent performs for a purpose, that is, guided by the person's intention."]]'''
         
         self.__real_links = self.__lists[0]  # create the list of actual article titles (will get trimmed as game goes on)
         print(self.__real_links)
@@ -40,6 +40,9 @@ class Hints():
 
     def getLinks(self):
         return (self.__lists[0], self.__lists[1])
+    
+    def endScreenAllLinks(self):
+        return self.__real_link_dupe
                 
     def checkGuess(self, guess):
         if guess.lower() == self.__display_links[0].lower() or guess.lower() == self.__real_links[1].lower():  # guess
@@ -110,6 +113,8 @@ class Hints():
         for s in range(len(sen)):
             self.__word = " " + self.__display_links[s]
             self.__length_hints.append(self.__placeholders[s])
+            print(sen[s][:sen[s].index(self.__word)+1])
+            print(sen[s][len(self.__word)+sen[s].index(self.__word):])
             sen[s] = sen[s][:sen[s].index(self.__word)+1] + self.__placeholders[s] + sen[s][len(self.__word)+sen[s].index(self.__word):]  # worst line of python ever (put the placeholder in the sentence)
         return sen
 

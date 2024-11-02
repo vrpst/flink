@@ -438,7 +438,7 @@ class AboutScreen():
         screen.showText("About", fr"{RESOURCES}\Helvetica-Bold.ttf", 80, (0, 0, 0), (100, 100))
         for i in range(len(self.__bodytext_ls)):
             screen.showText(self.__bodytext_ls[i], fr"{RESOURCES}\Helvetica.ttf", 18, (0, 0, 0), (100, 200+(30*i)))
-        screen.showText("""<AntiComposite> the first rule of parsing wikitext is "don't parse wikitext" """, "LTYPE.ttf", 16, (0, 0, 0), (110, 570))
+        screen.showText("""<AntiComposite> the first rule of parsing wikitext is "don't parse wikitext" """, fr"{RESOURCES}\LTYPE.ttf", 16, (0, 0, 0), (110, 570))
         #screen.screen.blit(pygame.image.load("game_drawing2.png").convert_alpha(), (850, 190))
         self.__buttons.add("back", "circle", 20.0, [0, 0, 0], (100, 800), new=False, usepreviouscolor=True)
 
@@ -500,24 +500,33 @@ class GameScreen():
                 screen.createRectangle("#9cacac", (50, 50), (100, 100+55*i), radius=5)
                 screen.createRectangle((207, 207, 207), (46, 46), (102, 102+55*i), radius=5)
 
-    def showScreen(self, new: bool):
-        self.__drawHintsBox(new)
-        self.__drawProgressBoxes()
-        if self.__animate_guess:
-            self.__guessAnimation(self.__color_to_animate_guess)  # flash green or red on guess box
-        self.__drawGuessBox()
-        self.__drawPageTitle()
-        self.__drawFirstSentence()
-        screen.centreTextHorizontally(self.__inputted_text, fr"{RESOURCES}\Helvetica.ttf", 32, (0, 0, 0), 200)
-        if new:
-            self.__buttons.add("sound_off", (700, 700), (50, 50), new=new, disable=False)
-            self.__buttons.add("sound_on", (700, 700), (50, 50), new=new, disable=False)
+    def showScreen(self, new: bool, end=False):
+        if not end:
+            self.__drawHintsBox(new)
+            self.__drawProgressBoxes()
+            if self.__animate_guess:
+                self.__guessAnimation(self.__color_to_animate_guess)  # flash green or red on guess box
+            self.__drawGuessBox()
+            self.__drawPageTitle()
+            self.__drawFirstSentence()
+            screen.centreTextHorizontally(self.__inputted_text, fr"{RESOURCES}\Helvetica.ttf", 32, (0, 0, 0), 200)
+            if new:
+                self.__buttons.add("sound_off", (700, 700), (50, 50), new=new, disable=False)
+                self.__buttons.add("sound_on", (700, 700), (50, 50), new=new, disable=False)
+            else:
+                self.__buttons.add(intf.checkMute(), (700, 700), (50, 50), new=new, disable=False)
         else:
-            self.__buttons.add(intf.checkMute(), (700, 700), (50, 50), new=new, disable=False)
+            if new:
+                self.__endlinks = self.__hints.endScreenAllLinks()
+            self.__drawProgressBoxes()
+            self.__buttons.add('quit', (1000, 700), (50, 50), new=new, disable=False)
+            for i in range(self.__progress_box):
+                screen.showText(f"{self.__endlinks[i]}", fr"{RESOURCES}\Helvetica.ttf", 30, (0, 0, 0), (162, 108+55*i))
+
 
     def __drawPageTitle(self):
-        screen.createRectangle("#9cacac", [24*self.__guess_box_length+4, 56], (700-(12*self.__guess_box_length)-2, 96))
-        screen.createRectangle((184, 195, 195), [24*self.__guess_box_length, 52], (700-(12*self.__guess_box_length), 98))
+        screen.createRectangle("#9cacac", [22*self.__guess_box_length+4, 56], (700-(11*self.__guess_box_length)-2, 96))
+        screen.createRectangle((184, 195, 195), [22*self.__guess_box_length, 52], (700-(11*self.__guess_box_length), 98))
         screen.centreTextHorizontally(self.__page_title, fr"{RESOURCES}\Helvetica-Bold.ttf", 40, (0, 0, 0), 107)
 
     def __drawFirstSentence(self):
@@ -574,28 +583,27 @@ class GameScreen():
     def __guessAnimation(self, color):
         if self.__to_color == True:
             if round(self.__guess_box_color[0]) != color[0] and round(self.__guess_box_color[1]) != color[1] and round(self.__guess_box_color[2]) != color[2]:
-                self.__guess_box_color[0] += (color[0]-207)/30
-                self.__guess_box_color[1] += (color[1]-207)/30
-                self.__guess_box_color[2] += (color[2]-207)/30
+                self.__guess_box_color[0] += (color[0]-207)/10
+                self.__guess_box_color[1] += (color[1]-207)/10
+                self.__guess_box_color[2] += (color[2]-207)/10
             else:
                 self.__hold += 1
-                if self.__hold == 20:
+                if self.__hold == 5:
                     self.__to_color = False
                     self.__hold = 0
         else:
             if round(self.__guess_box_color[0]) != 207 and round(self.__guess_box_color[1]) != 207 and round(self.__guess_box_color[2]) != 207:
-                self.__guess_box_color[0] -= (color[0]-207)/30
-                self.__guess_box_color[1] -= (color[1]-207)/30
-                self.__guess_box_color[2] -= (color[2]-207)/30
+                self.__guess_box_color[0] -= (color[0]-207)/10
+                self.__guess_box_color[1] -= (color[1]-207)/10
+                self.__guess_box_color[2] -= (color[2]-207)/10
             else:
                 self.__hold += 1
-                if self.__hold == 20:
+                if self.__hold == 5:
                     self.__animate_guess = False
 
-
-    def remakeScreen(self):
+    def remakeScreen(self, end=False):
         screen.blankScreen()
-        self.showScreen(False)
+        self.showScreen(False, end=end)
 
     def checkTextButtons(self, mouse, click):
         if click:
@@ -617,6 +625,8 @@ class GameScreen():
                 return "quit"
             elif self.__clicked[1] == "sound_on" or self.__clicked[1] == "sound_off":
                 intf.setMute()
+            elif self.__clicked[1] == "quit":
+                return True
         else:
             self.__buttons.checkButtonHover(mouse, click)
 
@@ -630,20 +640,38 @@ class GameScreen():
         else:
             if self.__inputted_text != "":
                 if self.__hints.checkGuess(self.__inputted_text):  # get the text inputted and check if the guess is correct
+                    self.__inputted_text = ""
                     pygame.mixer.music.load(fr"{RESOURCES}\correct.wav")
                     pygame.mixer.music.play()
                     self.__guessAnimationSetup()
                     self.__color_to_animate_guess = (190, 227, 188)
                     self.__page_title = self.__hints.returnPageTitle()
-                    self.__first_sentence = self.__hints.revealFirstSentence()
-                    self.__buttons.resetDisabledButtons()
-                    self.__progress_box_correct += 1
+                    try:
+                        self.__first_sentence = self.__hints.revealFirstSentence()
+                    except IndexError:
+                        self.__progress_box_correct += 1
+                        return False
+                    else:
+                        self.__buttons.resetDisabledButtons()
+                        self.__progress_box_correct += 1
+                        return True
                 else:
                     pygame.mixer.music.load(fr"{RESOURCES}\incorrect.wav")
                     pygame.mixer.music.play()
                     self.__guessAnimationSetup()
                     self.__color_to_animate_guess = (232, 116, 116)
                 self.__inputted_text = ""
+                return True
+
+class EndGameScreen():
+    def __init__(self):
+        self.__buttons = ImageButtons()
+
+    def showScreen(self, new=False):
+        # add the progress
+        # add the list of articles from the hints page
+        # add a header
+        self.__buttons.add(new=new)  # add a quit button
 
 class Interface():
     def __init__(self):
@@ -685,6 +713,7 @@ class Interface():
             if self.__status == "home":
                 self.__runHomeScreen()
             elif self.__status == "setupgame":
+                self.__gamescreen = None
                 self.__gamescreen = GameScreen()
                 self.__sg_thread = threading.Thread(target=self.__startGame)
                 self.__sg_thread.start()
@@ -699,9 +728,24 @@ class Interface():
                 self.__runAboutScreen()
             elif self.__status == "disconnected":
                 self.__runDisconnectedScreen()
+            elif self.__status == "endgame":
+                self.__runEndGame()
             screen.updateScreen()
         pygame.quit()
 
+    def __runEndGame(self):
+        self.__gamescreen.checkTextButtons(pygame.mouse.get_pos(), click=False)
+        self.__gamescreen.remakeScreen(end=True)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.__run = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self.__gamescreen_button = self.__gamescreen.checkTextButtons(pygame.mouse.get_pos(), click=True)
+                if self.__gamescreen_button:
+                    self.__homescreen = HomeScreen()
+                    self.__homescreen.showScreen("none")
+                    self.__status = "home"
+        
     def __runSetupGame(self):
         self.__homescreen.setLoading()
         self.__homescreen.remakeScreen()
@@ -759,8 +803,10 @@ class Interface():
                 elif event.key == 8:  # if it's a backspace, get rid of it
                     self.__gamescreen.removeFromInput()
                 elif event.key == 13:  # enter
-                    self.__gamescreen.checkGuess()
-    
+                    if not self.__gamescreen.checkGuess():
+                        self.__gamescreen.showScreen(True, end=True)
+                        self.__status = "endgame"
+
     def __runHomeScreen(self):
         self.__homescreen.checkTextButtons(pygame.mouse.get_pos(), click=False)
         self.__homescreen.remakeScreen()
@@ -833,8 +879,6 @@ intf.run()
 
 #TO DO
 # add mute and back buttons
-# link button functionality
-# fix game end but
-# add placeholder funct and fs
-# remove redundant buttons
-# fix random button to not hide instantly
+# fix game end
+# fix showscreen etc
+# mod to local variables

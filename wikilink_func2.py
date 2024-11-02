@@ -19,6 +19,11 @@ def getPageText(title):
         response_data = response.json()
         return response_data['parse']['wikitext']
 
+startingpage = session.get("https://en.wikipedia.org/w/api.php?action=query&format=json&list=random&rnnamespace=0&rnlimit=1", headers=headers)
+startingpage_data = startingpage.json()
+startingpage_data = startingpage_data['query']['random'][0]['title']
+print(startingpage_data)
+
 def findLink(text):  # FINDS THE RAW FIRST LINK IN THE PAGE AND THE STARTING SENTENCE
     first_link_found = False
     sentence_ended = False
@@ -32,7 +37,7 @@ def findLink(text):  # FINDS THE RAW FIRST LINK IN THE PAGE AND THE STARTING SEN
     first_sentence = ""
     sentence_start = 0
     sentence_start_needed = True
-    valid_nextchars = [10, 91, 123]  # line break, [, {
+    valid_nextchars = [10, 34, 39, 91, 123]  # line break, double quote, single quote, [, {
     redirect_bool = not checkRedirect(text)
     while not first_link_found or not sentence_ended:
         #print(open_curly_counter, close_curly_counter, open_bracket, close_bracket, open_square_counter, close_square_counter, sentence_start, sentence_ended, char_counter)
@@ -76,7 +81,7 @@ def findLink(text):  # FINDS THE RAW FIRST LINK IN THE PAGE AND THE STARTING SEN
                     if text[char_counter:char_counter+2] == ". " and 65 <= ord(text[char_counter+2]) <= 90 or text[char_counter:char_counter+3] == ".  ":  # if it's a period followed by a space and a cap letter
                         first_sentence = text[sentence_start:char_counter+1]
                         sentence_ended = True
-                    elif text[char_counter:char_counter+5] == ".<ref" or (text[char_counter] == "." and ord(text[char_counter+1]) in valid_nextchars): # refs
+                    elif text[char_counter:char_counter+5] == ".<ref" or (text[char_counter] == "." and (ord(text[char_counter+1]) in valid_nextchars or ord(text[char_counter+2]) in valid_nextchars)): # refs
                         first_sentence = text[sentence_start:char_counter+1]
                         sentence_ended = True
 
@@ -207,8 +212,8 @@ def run():
     real_link_list = []
     real_link_list_cap = []
     display_link_list = []
+    pagetofind = startingpage_data
     fs_list = []
-    pagetofind = "Pablo Jerez"
     va_list = ["the arts", "earth", "human", "human history", "life", "mathematics", "philosophy", "science", "society", "technology"]
     while not linkloop:
         pagetext = getPageText(pagetofind)  # get the text of the page
