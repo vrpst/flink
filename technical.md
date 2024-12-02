@@ -6,3 +6,15 @@ The parser makes up the bulk of the project's backend. I wrote it before I knew 
 The frontend is written using `pygame` and involved using it to much greater depth than I had ever done previously. The entire interface is inside a big while loop, with a status variable shifting between the game states (loading, running, end) and the different screens (home, howtoplay, about, game). `pygame` does not have native button support, and I had to write classes to function as button objects from scratch, as well as creating my own text input functionality. The loading screen makes use of multithreading to maintain the animations while the backend makes and parses the API calls; if the loading screen froze, it might give the impression that the game is crashing.
 
 _December 2024_
+
+## Features
+
+- Object-oriented game design
+- Complex string pattern matching and substitution
+- Interface design with pygame
+- Multithreading*
+- Internet interactions with requests*
+- REST API use*
+- JSON parsing*
+
+Technical aspects new to me in this project are marked with an asterisk.
